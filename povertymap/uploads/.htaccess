@@ -1,0 +1,15 @@
+# Hanya izinkan akses file gambar
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Require all granted
+</FilesMatch>
+
+# Blok semua file lain
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# Disable directory listing
+Options -Indexes
+
+# Disable PHP execution
+php_flag engine off

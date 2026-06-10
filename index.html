@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal WebGIS & Aplikasi Spasial</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --primary-light: #60A5FA;
+      --primary-pale: #EFF6FF;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --border-light: #F1F5F9;
+      --radius: 18px;
+      --radius-sm: 10px;
+      --shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+      --shadow-hover: 0 20px 40px -15px rgba(37, 99, 235, 0.15), 0 1px 10px rgba(37, 99, 235, 0.05);
+      --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Abstract Background Graphics */
+    body::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      bottom: -150px;
+      left: -150px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, rgba(255, 255, 255, 0) 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* HEADER */
+    header {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 18px 24px;
+      transition: var(--tr);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* HERO SECTION */
+    .hero {
+      padding: 60px 24px 40px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--primary-pale);
+      color: var(--primary);
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* MAIN CONTENT & GRID */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    /* PROJECT CARDS */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+      transition: var(--tr);
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--accent, var(--primary));
+      opacity: 0.8;
+      transition: var(--tr);
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(37, 99, 235, 0.15);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card:hover::before {
+      height: 6px;
+    }
+
+    .card-icon-wrap {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: var(--accent-bg, var(--primary-pale));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      color: var(--accent, var(--primary));
+      transition: var(--tr);
+    }
+
+    .card:hover .card-icon-wrap {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: -0.4px;
+      line-height: 1.35;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      flex: 1;
+    }
+
+    /* BADGES */
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 30px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: var(--border-light);
+      color: var(--text-secondary);
+      border-radius: 30px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* ACTION BUTTON */
+    .card-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-light);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--accent, var(--primary));
+      transition: var(--tr);
+    }
+
+    .card-action span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-action svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+      transition: var(--tr);
+    }
+
+    .card:hover .card-action svg {
+      transform: translateX(4px);
+    }
+
+    /* FOOTER */
+    footer {
+      background: #FFFFFF;
+      border-top: 1px solid var(--border-light);
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* User Profile Badge */
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--primary-pale);
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      padding: 6px 14px;
+      border-radius: 30px;
+      transition: var(--tr);
+    }
+    .user-badge:hover {
+      background: #E0EEFF;
+      border-color: rgba(37, 99, 235, 0.25);
+    }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .user-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .user-nim {
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 40px 16px 20px;
+      }
+      .hero h1 {
+        font-size: 30px;
+      }
+      .hero p {
+        font-size: 14px;
+      }
+      main {
+        padding: 0 16px 60px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">🌐</div>
+        <div class="brand-text">
+          <span class="brand-title">Portal WebGIS</span>
+          <span class="brand-subtitle">Tugas & UAS Sistem Informasi Geografis</span>
+        </div>
+      </a>
+      <div class="user-badge">
+        <div class="user-avatar">CY</div>
+        <div class="user-info">
+          <span class="user-name">Cecilia Yvon Gunawan</span>
+          <span class="user-nim">NIM D1041231056</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-tag">Kumpulan Proyek SIG</div>
+    <h1>Kumpulan Project <span>WebGIS Interaktif</span></h1>
+    <p>Hub aplikasi spasial interaktif hasil pengerjaan tugas praktikum dan Ujian Akhir Semester (UAS) untuk mata kuliah Sistem Informasi Geografis.</p>
+  </section>
+
+  <!-- MAIN CONTAINER -->
+  <main>
+    <div class="grid">
+
+      <!-- PROJECT 1: Poverty Map -->
+      <a href="http://localhost/webgis/povertymap/" class="card" style="--accent: #4F46E5; --accent-bg: #EEF2FF;">
+        <div class="card-icon-wrap">
+          <!-- Hand holding heart / charity icon -->
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <h3>WebGIS Poverty Mapping</h3>
+        <p>Sistem informasi geografis untuk memetakan sebaran kemiskinan warga di sekitar wilayah tempat ibadah guna penargetan program bantuan sosial.</p>
+        <div class="badges">
+          <span class="badge">Leaflet.js</span>
+          <span class="badge">MySQL</span>
+          <span class="badge">PHP Backend</span>
+          <span class="badge">Geotagging</span>
+        </div>
+        <div class="card-action">
+          <span>Buka Aplikasi</span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- PROJECT 2: SPBU Map -->
+      <a href="http://localhost/webgis/spbu/" class="card" style="--accent: #0D9488; --accent-bg: #F0FDF4;">
+        <div class="card-icon-wrap">
+          <!-- Gas pump icon -->
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 22V2h10v20M13 10h5M18 10l3 3v6M18 20v2M9 6h1"/>
+            <circle cx="8.5" cy="11.5" r="1.5"/>
+          </svg>
+        </div>
+        <h3>WebGIS SPBU</h3>
+        <p>Aplikasi pemetaan lokasi Stasiun Pengisian Bahan Bakar Umum (SPBU) di wilayah Pontianak, lengkap dengan informasi status operasional 24 jam.</p>
+        <div class="badges">
+          <span class="badge">Leaflet.js</span>
+          <span class="badge">MySQL</span>
+          <span class="badge">PHP WebApp</span>
+          <span class="badge">Interactive Map</span>
+        </div>
+        <div class="card-action">
+          <span>Buka Aplikasi</span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+      <!-- PROJECT 3: Parsil Jalan Laporan -->
+      <a href="http://localhost/webgis/parsil_jalan_jalanrusak/" class="card" style="--accent: #2563EB; --accent-bg: #EFF6FF;">
+        <div class="card-icon-wrap">
+          <!-- Road/infrastructure icon -->
+          <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 20h18M6 20v-4a6 6 0 0112 0v4M12 3v10M12 17h.01M9 7l3-3 3 3"/>
+          </svg>
+        </div>
+        <h3>WebGIS Jalan, Parsil Tanah, & Jalan Rusak</h3>
+        <p>Portal pemetaan spasial terintegrasi untuk jaringan rute jalan raya, batas legalitas parsil tanah, serta pelaporan kerusakan jalan berbasis partisipasi warga.</p>
+        <div class="badges">
+          <span class="badge">Turf.js</span>
+          <span class="badge">Leaflet.js</span>
+          <span class="badge">MySQL</span>
+          <span class="badge">Geotagging</span>
+        </div>
+        <div class="card-action">
+          <span>Buka Aplikasi</span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-container">
+      <p style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">Cecilia Yvon Gunawan — NIM D1041231056</p>
+      <p>&copy; 2026 Portal WebGIS Spasial. All rights reserved.</p>
+      <p style="font-size: 11px; color: var(--text-muted);">Dikembangkan menggunakan HTML5, Vanilla CSS, Javascript & LeafletJS.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

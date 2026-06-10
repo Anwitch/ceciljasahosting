@@ -1,0 +1,3626 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="WebGIS Poverty Mapping     Sistem Informasi Geografis Pemetaan Kemiskinan Berbasis Rumah Ibadah">
+  <title>WebGIS Poverty Mapping     Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!--           LOGIN SCREEN           -->
+  <div id="login-screen">
+    <div class="login-wrapper">
+      <div class="login-brand">
+        <div class="brand-icon"><i class="fa-solid fa-map-location-dot" style="color:#fff"></i></div>
+        <h1>WebGIS Poverty Mapping</h1>
+        <p>Sistem Pemetaan Kemiskinan Berbasis Rumah Ibadah</p>
+      </div>
+      <div class="login-card">
+        <!-- -- STEP INDICATOR -- -->
+        <div class="step-indicator">
+          <div class="step-dot active" id="sdot-1"></div>
+          <div class="step-line"></div>
+          <div class="step-dot" id="sdot-2"></div>
+        </div>
+
+        <!--        STEP 1 : PILIH ROLE        -->
+        <div class="login-step" id="step-role">
+          <h2>Selamat Datang</h2>
+          <p class="sub">Pilih peran Anda untuk melanjutkan</p>
+          <div class="role-grid-full">
+            <div class="role-card" id="role-admin" onclick="selectRoleAndNext('admin')">
+              <div class="role-card-icon admin-icon">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div class="role-card-body">
+                <span class="role-card-name">Admin</span>
+                <span class="role-card-desc">Kelola data, verifikasi laporan & manajemen pengguna</span>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+            <div class="role-card" id="role-surveyor" onclick="selectRoleAndNext('surveyor')">
+              <div class="role-card-icon surveyor-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+              </div>
+              <div class="role-card-body">
+                <span class="role-card-name">Surveyor</span>
+                <span class="role-card-desc">Input data lapangan & pelaporan kondisi warga</span>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+            <div class="role-card" id="role-pemangku" onclick="selectRoleAndNext('pemangku')">
+              <div class="role-card-icon pemangku-icon">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <div class="role-card-body">
+                <span class="role-card-name">Pemangku</span>
+                <span class="role-card-desc">Analisis data & pengambilan keputusan strategis</span>
+              </div>
+              <div class="role-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!--        STEP 2 : FORM KREDENSIAL        -->
+        <div class="login-step hidden-step" id="step-credentials">
+          <!-- Role badge aktif -->
+          <button class="back-btn" onclick="goBackToRole()" title="Ganti peran">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <div class="active-role-badge" id="active-role-badge">
+            <div class="arb-icon" id="arb-icon"></div>
+            <div class="arb-info">
+              <span class="arb-label">Masuk sebagai</span>
+              <span class="arb-name" id="arb-name"></span>
+            </div>
+          </div>
+
+          <div class="login-field">
+            <label>Username</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-user"></i>
+              <input type="text" id="login-user" placeholder="Masukkan username">
+            </div>
+          </div>
+          <div class="login-field">
+            <label>Password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              <input type="password" id="login-pass" placeholder="Masukkan password">
+              <button type="button" class="toggle-pass" onclick="togglePassword('login-pass', this)" tabindex="-1"
+                title="Tampilkan/sembunyikan password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button class="login-btn" id="login-btn" onclick="doLogin()">
+            <i class="fa-solid fa-right-to-bracket"></i> Masuk ke WebGIS Poverty Mapping
+          </button>
+          <div class="login-error" id="login-error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--           APP           -->
+  <div id="app" class="hidden">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+          <div class="logo-text">
+            <h1>WebGIS Poverty Mapping</h1>
+            <p>Pemetaan Kemiskinan</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar" id="sb-avatar">A</div>
+          <div class="user-info">
+            <div class="u-name" id="sb-name">Admin</div>
+            <div class="u-role" id="sb-role">Administrator</div>
+          </div>
+          <button class="logout-btn-small" onclick="doLogout()" title="Keluar"><i
+              class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+      <!-- TOPBAR -->
+      <div id="topbar">
+        <div class="topbar-left" style="display:flex;align-items:center;gap:12px">
+          <button class="topbar-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Kecilkan/Besarkan Sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div>
+            <h2 id="page-title" style="margin:0">Dashboard</h2>
+            <div class="breadcrumb" id="page-bread" style="margin-top:2px">WebGIS Poverty Mapping / Dashboard</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <button class="topbar-btn" id="notif-btn" onclick="switchPage('verify')" title="Verifikasi Pending">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notif-dot" id="notif-dot" style="display:none"></span>
+          </button>
+          <button class="topbar-btn" onclick="loadAll()" title="Refresh Data">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div id="content-area">
+        <div id="page-content"></div>
+      </div>
+      <!-- Persistent Map     dipindahkan ke halaman yang butuh peta, tidak pernah di-destroy -->
+      <div id="persistent-map" style="width:100%;height:100%;display:none;"></div>
+    </div>
+  </div>
+
+  <!-- EDIT PANEL -->
+  <div id="edit-panel" onclick="if(event.target===this)closeEditPanel()">
+    <div class="preview-box">
+      <div class="pb-header">
+        <h3 id="ep-title">Edit Data</h3>
+        <button class="pb-close" onclick="closeEditPanel()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-two-col">
+        <div class="modal-col-left" id="ep-body"></div>
+        <div class="modal-col-right">
+          <div id="map-edit-modal"
+            style="width: 100%; height: 100%; min-height: 380px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          </div>
+        </div>
+      </div>
+      <div class="ep-footer" id="ep-footer">
+        <button class="ep-save" id="ep-save" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i>
+          Simpan</button>
+        <button class="ep-del" onclick="deleteFromEdit()"><i class="fa-solid fa-trash"></i> Hapus</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- DETAIL MODAL -->
+  <div id="detail-modal" onclick="if(event.target===this)closeDetailModal()">
+    <div class="dm-box">
+      <div class="dm-header">
+        <h3 id="dm-title"><i class="fa-solid fa-circle-info"></i> Detail Data</h3>
+        <button class="dm-close" onclick="closeDetailModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="dm-body" id="dm-body"></div>
+      <div class="dm-footer" id="dm-footer"></div>
+    </div>
+  </div>
+
+  <!-- REJECT MODAL -->
+  <div id="reject-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);margin-right:8px"></i>Tolak Data</h3>
+      <p>Berikan alasan penolakan agar surveyor bisa memperbaiki data.</p>
+      <textarea id="reject-reason" placeholder="Contoh: Foto tidak jelas, koordinat tidak akurat..."></textarea>
+      <div class="modal-btns">
+        <button style="background:var(--bg);color:var(--text2)" onclick="closeRejectModal()">Batal</button>
+        <button style="background:var(--red-light);color:var(--red)" onclick="confirmReject()">Tolak Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW MODAL -->
+  <div id="preview-modal" onclick="if(event.target===this)closePreviewModal()">
+    <div class="preview-box">
+      <div class="pb-header">
+        <h3 id="pb-title"><i class="fa-solid fa-eye"></i> Detail Data</h3>
+        <button class="pb-close" onclick="closePreviewModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-two-col">
+        <div class="modal-col-left" id="pb-body"></div>
+        <div class="modal-col-right">
+          <div id="map-preview-modal"
+            style="width: 100%; height: 100%; min-height: 380px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          </div>
+        </div>
+      </div>
+      <div class="pb-footer">
+        <button onclick="closePreviewModal()"><i class="fa-solid fa-xmark" style="margin-right:6px"></i>Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST & LOADING -->
+  <div id="toast"></div>
+  <div id="loading">
+    <div class="spin"></div>
+    <p>Memuat data...</p>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div id="lightbox" onclick="closeLightbox()">
+    <button id="lightbox-close" onclick="closeLightbox()" title="Tutup"><i class="fa-solid fa-xmark"></i></button>
+    <img id="lightbox-img" src="" alt="Foto" onclick="event.stopPropagation()">
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+  <script>
+    // -- 
+    //  WebGIS Poverty Mapping     Main App
+    // -- 
+    const API = {
+      ibadah: 'api/ibadah.php', warga: 'api/warga.php', stats: 'api/stats.php',
+      auth: 'api/auth.php', upload: 'api/upload.php', verify: 'api/verify.php', audit: 'api/audit.php'
+    };
+    const COLORS = { masjid: '#f59e0b', gereja: '#3b82f6', pura: '#8b5cf6', klenteng: '#f97316', vihara: '#10b981', lain: '#6b7280' };
+    const ICONS = { masjid: 'fa-solid fa-mosque', gereja: 'fa-solid fa-church', pura: 'fa-solid fa-gopuram', klenteng: 'fa-solid fa-torii-gate', vihara: 'fa-solid fa-dharmachakra', lain: 'fa-solid fa-place-of-worship' };
+    // Warna berdasarkan STATUS (Pendekatan B: warna = status, ikon = jenis)
+    const STATUS_COLORS = {
+      ibadah: {
+        verified: '#10b981',   // hijau     terverifikasi
+        pending: '#f59e0b',   // amber     menunggu verifikasi
+        rejected: '#ef4444',   // merah     ditolak
+      },
+      warga: {
+        verified_covered: '#10b981',  // hijau     verified & dalam radius ibadah
+        verified_uncovered: '#9ca3af',  // abu       verified tapi belum terjangkau
+        pending: '#f59e0b',  // amber     menunggu verifikasi
+        rejected: '#ef4444',  // merah     ditolak
+      }
+    };
+    const ROLE_LABELS = { admin: 'Administrator', surveyor: 'Surveyor Lapangan', pemangku: 'Pemangku Keputusan' };
+
+    // --  STATE ----------------------------------
+    let map = null, mapPage = null, heatMap = null, heatLayer = null;
+    let ibadahLayer = {}, wargaLayer = {};
+    let addMode = null, pickedCoord = { ibadah: null, miskin: null };
+    let editState = { type: null, id: null };
+    let tempMarker = null, dragActive = false;
+    let currentUser = null, pendingReject = null;
+    let uploadedFotoPath = { ibadah: null, miskin: null };
+    let cachedIbadah = [], cachedWarga = [], cachedStats = {};
+    let currentPage = 'dashboard';
+    let selectedRole = 'admin';
+    let dashTab = 'overview';
+
+    // --  DAFTAR STATE --------------------------
+    let daftarState = { tab: 'ibadah', search: '', status: '', kecamatan: '', jenis: '', layanan: '', myDataOnly: false, surveyorId: '', page: 1, perPage: 10, activeId: null };
+
+    // --  LOGIN     MULTISTEP                                                                   
+    const ROLE_META = {
+      admin: { label: 'Administrator', icon: 'fa-user-shield', colorClass: 'admin-icon' },
+      surveyor: { label: 'Surveyor Lapangan', icon: 'fa-clipboard-list', colorClass: 'surveyor-icon' },
+      pemangku: { label: 'Pemangku Keputusan', icon: 'fa-chart-simple', colorClass: 'pemangku-icon' },
+    };
+
+    function selectRoleAndNext(role) {
+      selectedRole = role;
+      // Animate card click feedback
+      const card = document.getElementById('role-' + role);
+      card.classList.add('selected');
+      setTimeout(() => goToCredentials(), 220);
+    }
+
+    function goToCredentials() {
+      const meta = ROLE_META[selectedRole];
+      // Update badge
+      const badge = document.getElementById('active-role-badge');
+      const icon = document.getElementById('arb-icon');
+      const name = document.getElementById('arb-name');
+      icon.className = 'arb-icon ' + meta.colorClass;
+      icon.innerHTML = `<i class="fa-solid ${meta.icon}"></i>`;
+      name.textContent = meta.label;
+
+      // Step dot indicator
+      document.getElementById('sdot-1').classList.remove('active');
+      document.getElementById('sdot-2').classList.add('active');
+
+      // Slide transition
+      const s1 = document.getElementById('step-role');
+      const s2 = document.getElementById('step-credentials');
+      s1.classList.add('slide-out-left');
+      s2.classList.remove('hidden-step');
+      s2.classList.add('slide-in-right');
+
+      s1.addEventListener('animationend', () => {
+        s1.classList.add('hidden-step');
+        s1.classList.remove('slide-out-left');
+      }, { once: true });
+      s2.addEventListener('animationend', () => {
+        s2.classList.remove('slide-in-right');
+        document.getElementById('login-user').focus();
+      }, { once: true });
+    }
+
+    function goBackToRole() {
+      const s1 = document.getElementById('step-role');
+      const s2 = document.getElementById('step-credentials');
+
+      // Reset step dots
+      document.getElementById('sdot-1').classList.add('active');
+      document.getElementById('sdot-2').classList.remove('active');
+
+      // Remove selected state on all cards
+      ['admin', 'surveyor', 'pemangku'].forEach(r => {
+        document.getElementById('role-' + r).classList.remove('selected');
+      });
+
+      // Clear errors & inputs
+      document.getElementById('login-error').textContent = '';
+
+      // Slide back
+      s2.classList.add('slide-out-right');
+      s1.classList.remove('hidden-step');
+      s1.classList.add('slide-in-left');
+
+      s2.addEventListener('animationend', () => {
+        s2.classList.add('hidden-step');
+        s2.classList.remove('slide-out-right');
+      }, { once: true });
+      s1.addEventListener('animationend', () => {
+        s1.classList.remove('slide-in-left');
+      }, { once: true });
+    }
+
+    // Keep original selectRole for backward compat (used in doLogout reset)
+    function selectRole(role) { selectedRole = role; }
+
+    document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    async function doLogin() {
+      const username = document.getElementById('login-user').value.trim();
+      const password = document.getElementById('login-pass').value;
+      const errEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+      errEl.textContent = '';
+      if (!username || !password) { errEl.textContent = 'Username dan password wajib diisi'; return; }
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Masuk...';
+      try {
+        const res = await fetch(API.auth + '?action=login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ username, password })
+        }).then(r => r.json());
+        if (!res.success) {
+          errEl.textContent = res.error || 'Login gagal';
+          return;
+        }
+        // Check role matches selection
+        if (res.user.role !== selectedRole) {
+          errEl.textContent = `Akun ini adalah ${ROLE_LABELS[res.user.role]}, bukan ${ROLE_LABELS[selectedRole] || selectedRole}. Pilih peran yang sesuai.`;
+          await fetch(API.auth + '?action=logout', { method: 'POST', credentials: 'include' });
+          return;
+        }
+        currentUser = res.user;
+        await showApp();
+      } catch (e) {
+        errEl.textContent = 'Koneksi gagal. Pastikan server berjalan.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk ke WebGIS Poverty Mapping';
+      }
+    }
+
+    async function doLogout() {
+      // Detach persistent map first to move it back to #main before any container is destroyed
+      detachPersistentMap();
+
+      await fetch(API.auth + '?action=logout', { method: 'POST', credentials: 'include' });
+      currentUser = null;
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+      // Reset to step 1
+      const s1 = document.getElementById('step-role');
+      const s2 = document.getElementById('step-credentials');
+      s1.classList.remove('hidden-step', 'slide-out-left', 'slide-in-left');
+      s2.classList.add('hidden-step');
+      s2.classList.remove('slide-in-right', 'slide-out-right');
+      document.getElementById('sdot-1').classList.add('active');
+      document.getElementById('sdot-2').classList.remove('active');
+      ['admin', 'surveyor', 'pemangku'].forEach(r => document.getElementById('role-' + r).classList.remove('selected'));
+      if (persistentMap) { persistentMap.remove(); persistentMap = null; _persistentMapAttachedTo = null; }
+      map = null;
+      if (heatMap) { heatMap.remove(); heatMap = null; }
+      persistentHeatLayer = null;
+      ibadahLayer = {}; wargaLayer = {};
+      _dataVersion = 0; _lastMarkerVersion = -1;
+    }
+
+    async function checkSession() {
+      try {
+        const res = await fetch(API.auth + '?action=me', { credentials: 'include' }).then(r => r.json());
+        if (res.logged_in && res.user) { currentUser = res.user; await showApp(); }
+      } catch (e) { }
+    }
+
+    async function showApp() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      const u = currentUser;
+      const av = document.getElementById('sb-avatar');
+      av.textContent = u.nama_lengkap.charAt(0).toUpperCase();
+      av.className = 'user-avatar ' + u.role;
+      document.getElementById('sb-name').textContent = u.nama_lengkap;
+      document.getElementById('sb-role').textContent = ROLE_LABELS[u.role] || u.role;
+      buildNav();
+      window.scrollTo(0, 0);
+
+      // Load data dulu, baru render dashboard sekali (mencegah double render)
+      await loadAll();
+      switchPage('dashboard');
+    }
+
+    // --  NAV                                                                                                             
+    function getNavItems(role) {
+      const all = [
+        { id: 'dashboard', icon: 'fa-chart-pie', label: 'Dashboard', roles: ['admin', 'surveyor', 'pemangku'] },
+        { id: 'peta', icon: 'fa-map', label: 'Peta Interaktif', roles: ['admin', 'surveyor', 'pemangku'] },
+        { id: 'ibadah', icon: 'fa-place-of-worship', label: 'Input Ibadah', roles: ['surveyor'] },
+        { id: 'miskin', icon: 'fa-people-group', label: 'Input Warga', roles: ['surveyor'] },
+        { id: 'daftar', icon: 'fa-list', label: 'Daftar Data', roles: ['admin', 'surveyor', 'pemangku'], badge: 'daftar' },
+        { id: 'verify', icon: 'fa-circle-check', label: 'Verifikasi', roles: ['admin'], badge: 'verify' },
+        { id: 'users', icon: 'fa-users', label: 'Kelola User', roles: ['admin'] },
+      ];
+      return all.filter(i => i.roles.includes(role));
+    }
+
+    function buildNav() {
+      const items = getNavItems(currentUser.role);
+      const nav = document.getElementById('sidebar-nav');
+      const sections = {
+        main: ['dashboard', 'peta'],
+        input: ['ibadah', 'miskin'],
+        data: ['daftar', 'verify'],
+        analisis: ['analisis'],
+        admin: ['users'],
+      };
+      const sectionLabels = { main: 'Menu Utama', input: 'Input Data', data: 'Manajemen Data', analisis: 'Analisis', admin: 'Administrasi' };
+      let html = '';
+      for (const [sec, ids] of Object.entries(sections)) {
+        const filtered = ids.filter(id => items.find(i => i.id === id));
+        if (!filtered.length) continue;
+        html += `<div class="nav-section"><div class="nav-section-label">${sectionLabels[sec]}</div>`;
+        filtered.forEach(id => {
+          const item = items.find(i => i.id === id);
+          if (!item) return;
+          const badgeHtml = item.badge ? `<span class="nav-badge" id="nb-${item.badge}" style="display:none">0</span>` : '';
+          html += `<div class="nav-item" id="nav-${item.id}" onclick="switchPage('${item.id}')" title="${item.label}">
+        <i class="fa-solid ${item.icon} nav-icon"></i><span class="nav-label">${item.label}</span>${badgeHtml}
+      </div>`;
+        });
+        html += '</div>';
+      }
+      nav.innerHTML = html;
+    }
+
+    // --  NAVIGATION SWITCH                                                                   
+    function switchPage(page) {
+      // Detach persistent map sebelum innerHTML halaman diganti
+      detachPersistentMap();
+      currentPage = page;
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.toggle('active', el.id === 'nav-' + page);
+      });
+      const titles = {
+        dashboard: 'Dashboard', peta: 'Peta Interaktif', ibadah: 'Input Rumah Ibadah',
+        miskin: 'Input Warga Miskin', daftar: 'Daftar Data', verify: 'Verifikasi Data',
+        analisis: 'Panel Analisis',
+        users: 'Kelola User'
+      };
+      const title = titles[page] || page;
+      document.getElementById('page-title').textContent = title;
+      document.getElementById('page-bread').textContent = `WebGIS Poverty Mapping / ${title}`;
+      if (page === 'ibadah') setAddMode('ibadah');
+      else if (page === 'miskin') setAddMode('miskin');
+      else cancelAddMode();
+      renderPage(page);
+      window.scrollTo(0, 0);
+    }
+
+    // -- RENDER PAGES ---------------------------
+    function renderPage(page) {
+      const area = document.getElementById('page-content');
+      switch (page) {
+        case 'dashboard': renderDashboard(area); break;
+        case 'peta': renderMapPage(area); break;
+        case 'ibadah': renderFormIbadah(area); break;
+        case 'miskin': renderFormMiskin(area); break;
+        case 'daftar': renderDaftar(area); break;
+        case 'verify': renderVerify(area); break;
+        case 'users': renderUsers(area); break;
+        case 'analisis': switchPage('dashboard'); break; // redirect fallback
+      }
+    }
+
+    function switchDashTab(tab) {
+      detachPersistentMap();
+      dashTab = tab;
+      renderDashboard(document.getElementById('page-content'));
+    }
+
+    // --  DASHBOARD -----------------------------
+    function renderDashboard(area) {
+      // Jika data belum ada, tampilkan skeleton dulu
+      if (!cachedStats || Object.keys(cachedStats).length === 0) {
+        const skeletonCard = `<div class="stat-card" style="animation:pulse 1.4s ease-in-out infinite">
+          <div style="height:11px;border-radius:6px;background:var(--border);width:60%;margin-bottom:10px"></div>
+          <div style="height:32px;border-radius:8px;background:var(--border);width:40%;margin-bottom:8px"></div>
+          <div style="height:10px;border-radius:6px;background:var(--border2);width:80%"></div>
+        </div>`;
+        area.innerHTML = `
+          <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
+          <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px">
+            ${skeletonCard.repeat(4)}
+          </div>
+          <div class="content-grid">
+            <div class="card"><div class="card-header"><h3>Peta Persebaran</h3></div>
+              <div class="card-map" style="display:flex;align-items:center;justify-content:center;background:var(--border2)">
+                <div style="text-align:center;color:var(--text3)"><div class="spin"></div><p style="margin-top:10px;font-size:13px">Memuat data peta...</p></div>
+              </div>
+            </div>
+            <div class="card"><div class="card-header"><h3>Informasi &amp; Legenda</h3></div>
+              <div class="card-body" style="animation:pulse 1.4s ease-in-out infinite">
+                <div style="height:12px;border-radius:6px;background:var(--border);width:70%;margin-bottom:12px"></div>
+                <div style="height:12px;border-radius:6px;background:var(--border2);width:50%;margin-bottom:12px"></div>
+                <div style="height:12px;border-radius:6px;background:var(--border);width:80%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px"><div class="card-header"><h3>Data Terbaru</h3></div>
+            <div class="card-body" style="animation:pulse 1.4s ease-in-out infinite">
+              ${`<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2)"><div style="width:36px;height:36px;border-radius:50%;background:var(--border);flex-shrink:0"></div><div style="flex:1"><div style="height:12px;border-radius:6px;background:var(--border);width:55%;margin-bottom:8px"></div><div style="height:10px;border-radius:6px;background:var(--border2);width:80%"></div></div></div>`.repeat(4)}
+            </div>
+          </div>`;
+        return;
+      }
+
+      const s = cachedStats;
+      const role = currentUser.role;
+      const pct = s.kk_total > 0 ? Math.round((s.kk_terlayani / s.kk_total) * 100) : 0;
+
+      // Tab switcher jika user admin atau pemangku
+      let tabsHtml = '';
+      if (role === 'admin' || role === 'pemangku') {
+        tabsHtml = `
+        <div class="daftar-tabs" style="margin-bottom:16px">
+          <button class="daftar-tab ${dashTab === 'overview' ? 'active' : ''}" onclick="switchDashTab('overview')"><i class="fa-solid fa-chart-pie"></i> Ikhtisar & Peta</button>
+          <button class="daftar-tab ${dashTab === 'analisis' ? 'active' : ''}" onclick="switchDashTab('analisis')"><i class="fa-solid fa-chart-column"></i> Analisis Wilayah & Bantuan</button>
+        </div>`;
+      }
+
+      if ((role === 'admin' || role === 'pemangku') && dashTab === 'analisis') {
+        renderDashboardAnalisis(area, tabsHtml, s, pct);
+        return;
+      }
+
+      let roleCards = '';
+      if (role === 'admin') {
+        roleCards = `
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Ibadah Pending</div><div class="s-icon icon-amber"><i class="fa-solid fa-clock"></i></div></div>
+        <div class="s-value">${s.pending_ibadah || 0}</div>
+        <div class="s-sub"><span style="color:var(--amber)"><i class="fa-solid fa-clock" style="margin-right:4px"></i>Menunggu verifikasi</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Warga Pending</div><div class="s-icon icon-red"><i class="fa-solid fa-user-clock"></i></div></div>
+        <div class="s-value">${s.pending_warga || 0}</div>
+        <div class="s-sub"><span style="color:var(--red)"><i class="fa-solid fa-clock" style="margin-right:4px"></i>Menunggu verifikasi</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Total User</div><div class="s-icon icon-purple"><i class="fa-solid fa-users"></i></div></div>
+        <div class="s-value">${s.total_users || 0}</div>
+        <div class="s-sub">Akun aktif terdaftar</div>
+      </div>`;
+      } else if (role === 'surveyor') {
+        roleCards = `
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Ibadah Saya</div><div class="s-icon icon-amber"><i class="fa-solid fa-place-of-worship"></i></div></div>
+        <div class="s-value">${s.my_pending_ibadah || 0}</div>
+        <div class="s-sub">Pending verifikasi</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Warga Saya</div><div class="s-icon icon-red"><i class="fa-solid fa-people-group"></i></div></div>
+        <div class="s-value">${s.my_pending_warga || 0}</div>
+        <div class="s-sub">Pending verifikasi</div>
+      </div>`;
+      }
+
+      area.innerHTML = `
+    ${tabsHtml}
+    <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Rumah Ibadah</div><div class="s-icon icon-blue"><i class="fa-solid fa-place-of-worship"></i></div></div>
+        <div class="s-value">${s.ibadah || 0}</div>
+        <div class="s-sub">Data terverifikasi</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Kepala Keluarga</div><div class="s-icon icon-red"><i class="fa-solid fa-house-chimney-user"></i></div></div>
+        <div class="s-value">${s.kk_total || 0}</div>
+        <div class="s-sub"><span class="badge-down">Warga Miskin</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">KK Terlayani</div><div class="s-icon icon-green"><i class="fa-solid fa-circle-check"></i></div></div>
+        <div class="s-value">${s.kk_terlayani || 0}</div>
+        <div class="s-sub"><span class="badge-up">${pct}%</span> coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Total Jiwa</div><div class="s-icon icon-purple"><i class="fa-solid fa-users"></i></div></div>
+        <div class="s-value">${s.jiwa_total || 0}</div>
+        <div class="s-sub">Terdata dalam sistem</div>
+      </div>
+      ${roleCards}
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>Peta Persebaran</h3>
+          <button onclick="switchPage('peta')" style="font-size:11px;font-weight:600;color:var(--blue);border:none;background:none;cursor:pointer;">Lihat Penuh    </button>
+        </div>
+        <div class="card-map" id="dash-map-container"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Informasi & Legenda</h3></div>
+        <div class="card-body">
+          <div class="info-section">
+            <div class="info-section-title">Jenis Rumah Ibadah</div>
+            ${Object.entries(ICONS).map(([jenis]) => `
+              <div class="legend-row">
+                <div class="legend-dot" style="background:${COLORS[jenis]}"></div>
+                <i class="${ICONS[jenis]}" style="margin-right:4px;color:${COLORS[jenis]}"></i>
+                ${jenis.charAt(0).toUpperCase() + jenis.slice(1)}
+              </div>
+            `).join('')}
+          </div>
+          ${currentUser.role !== 'pemangku' ? `
+          <div class="info-section" style="margin-top:14px">
+            <div class="info-section-title">Status Pin (Badge)</div>
+            <div class="legend-row" style="align-items:center;gap:8px">
+              <div style="position:relative;width:22px;height:22px;flex-shrink:0">
+                <div style="width:22px;height:22px;background:#6b7280;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:2px solid rgba(255,255,255,.9)"></div>
+              </div>
+              <span style="font-size:12px">Terverifikasi <em style="color:var(--text3)">(tanpa badge)</em></span>
+            </div>
+            <div class="legend-row" style="align-items:center;gap:8px">
+              <div style="position:relative;width:22px;height:22px;flex-shrink:0">
+                <div style="width:22px;height:22px;background:#6b7280;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:2px solid rgba(255,255,255,.9);opacity:0.5"></div>
+                <div style="position:absolute;top:-3px;right:-3px;width:11px;height:11px;background:#f59e0b;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:6px;color:#fff;font-weight:700">!</div>
+              </div>
+              <span style="font-size:12px">Menunggu verifikasi <em style="color:var(--text3)">(redup)</em></span>
+            </div>
+            <div class="legend-row" style="align-items:center;gap:8px">
+              <div style="position:relative;width:22px;height:22px;flex-shrink:0">
+                <div style="width:22px;height:22px;background:#6b7280;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:2px solid rgba(255,255,255,.9);opacity:0.45"></div>
+                <div style="position:absolute;top:-3px;right:-3px;width:11px;height:11px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:6px;color:#fff;font-weight:700">   </div>
+              </div>
+              <span style="font-size:12px">Ditolak</span>
+            </div>
+          </div>` : ''}
+          <div class="info-section" style="margin-top:14px">
+            <div class="info-section-title">Status Warga Miskin</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#10b981"></div>Terlayani (dalam radius)</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#9ca3af"></div>Belum terlayani</div>
+          </div>
+          <div class="info-section" style="margin-top:14px">
+            <div class="info-section-title">Ringkasan Data</div>
+            <div class="mini-stat"><span class="m-label">KK Belum Terlayani</span><span class="m-val" style="color:var(--red)">${s.kk_belum || 0}</span></div>
+            <div class="mini-stat"><span class="m-label">Coverage Rate</span><span class="m-val" style="color:var(--green)">${pct}%</span></div>
+            <div class="mini-stat"><span class="m-label">Jiwa Terlayani</span><span class="m-val">${s.jiwa_terlayani || 0}</span></div>
+          </div>
+          ${currentUser.role === 'admin' ? `
+          <div class="info-section" style="margin-top:14px">
+            <div class="info-section-title">Ubah Radius Global</div>
+            <div class="form-group">
+              <div class="radius-row">
+                <input type="range" id="global-r" min="100" max="5000" step="100" value="500" oninput="document.getElementById('gr-val').textContent=this.value+'m'">
+                <div class="radius-val" id="gr-val">500m</div>
+              </div>
+            </div>
+            <button class="submit-btn primary full" onclick="applyGlobalRadius()"><i class="fa-solid fa-arrows-left-right-to-line"></i> Terapkan ke Semua</button>
+          </div>`: ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <h3>${role === 'admin' ? 'Data Terbaru' : 'Rumah Ibadah Terdekat'}</h3>
+        <button onclick="switchPage('daftar')" style="font-size:11px;font-weight:600;color:var(--blue);border:none;background:none;cursor:pointer;">Lihat Semua    </button>
+      </div>
+      <div class="card-body" id="dash-recent"></div>
+    </div>
+  `;
+      // Persistent map     tile & marker di-cache, tidak di-destroy saat navigasi
+      setTimeout(() => {
+        attachPersistentMapTo('dash-map-container');
+        getOrCreatePersistentMap();
+        rebuildPersistentMarkers();
+        fitPersistentMapToData();
+        renderDashRecent();
+      }, 50);
+    }
+
+    function renderDashRecent() {
+      const el = document.getElementById('dash-recent');
+      if (!el) return;
+      const items = cachedIbadah.slice(0, 5);
+      if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="e-icon"><i class="fa-solid fa-place-of-worship"></i></div><p>Belum ada data rumah ibadah</p></div>'; return; }
+      el.innerHTML = items.map(ib => `
+    <div class="list-item" onclick="flyToOnMap(${ib.lat},${ib.lng})">
+      <div class="list-icon" style="background:${COLORS[ib.jenis]}22;color:${COLORS[ib.jenis]}"><i class="${ICONS[ib.jenis]}"></i></div>
+      <div class="list-body">
+        <div class="list-name">${h(ib.nama)}</div>
+        <div class="list-sub">PIC: ${h(ib.pic)}    Radius: ${ib.radius}m    ${ib.jumlah_kk || 0} KK</div>
+      </div>
+      <div class="list-end"><span class="badge badge-${ib.status}">${statusLabel(ib.status)}</span></div>
+    </div>`).join('');
+    }
+
+    // --  PETA PAGE -----------------------------
+    function renderMapPage(area) {
+      const inputBtns = currentUser.role === 'surveyor' ? `
+          <button class="submit-btn secondary" onclick="switchPage('ibadah')" style="padding:7px 14px;font-size:12px"><i class="fa-solid fa-plus"></i> Input Ibadah</button>
+          <button class="submit-btn secondary" onclick="switchPage('miskin')" style="padding:7px 14px;font-size:12px"><i class="fa-solid fa-plus"></i> Input Warga</button>` : '';
+      area.innerHTML = `
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <h3>Peta Interaktif Kemiskinan</h3>
+        ${inputBtns ? `<div style="display:flex;gap:8px">${inputBtns}</div>` : ''}
+      </div>
+      <div style="height:calc(100vh - 200px);min-height:400px"><div id="map-full-container" style="height:100%"></div></div>
+    </div>`;
+      setTimeout(() => {
+        attachPersistentMapTo('map-full-container');
+        getOrCreatePersistentMap();
+        rebuildPersistentMarkers();
+        fitPersistentMapToData();
+      }, 50);
+    }
+
+    // --  FORM IBADAH ---------------------------
+    function renderFormIbadah(area) {
+      area.innerHTML = `
+    <div class="content-grid-form">
+      <div class="card">
+        <div class="card-header"><h3>Tambah Rumah Ibadah</h3><span style="font-size:11px;color:var(--text2)">Klik peta untuk menentukan lokasi</span></div>
+        <div class="card-body">
+          <div class="form-section-title">Unggah Foto (Opsional)</div>
+          <div class="form-group">
+            <div class="upload-area" id="upload-ibadah">
+              <div class="u-icon"><i class="fa-solid fa-camera"></i></div>
+              <p>Klik atau seret foto ke sini<br><strong>JPEG/PNG    max 5MB    GPS otomatis terdeteksi</strong></p>
+              <input type="file" accept="image/jpeg,image/png" onchange="handleFotoUpload(this,'ibadah')">
+            </div>
+            <div class="upload-preview" id="preview-ibadah">
+              <img id="preview-ibadah-img">
+              <button class="rem-btn" onclick="removeFoto('ibadah')">   </button>
+            </div>
+            <div id="exif-badge-ibadah"></div>
+          </div>
+
+          <div class="form-section-title" style="margin-top:16px">Informasi Rumah Ibadah</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Jenis</label>
+              <select id="f-jenis">
+                <option value="masjid">Masjid / Musholla</option>
+                <option value="gereja">Gereja</option>
+                <option value="pura">Pura</option>
+                <option value="klenteng">Klenteng</option>
+                <option value="vihara">Vihara</option>
+                <option value="lain">Lainnya</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Nama Rumah Ibadah</label><input type="text" id="f-nama" placeholder="Cth: Masjid Al-Ikhlas"></div>
+            <div class="form-group"><label>PIC (Penanggung Jawab)</label><input type="text" id="f-pic" placeholder="Nama PIC"></div>
+            <div class="form-group"><label>No. WhatsApp PIC</label><input type="text" id="f-wa" placeholder="08xx-xxxx"></div>
+          </div>
+          <div class="form-group"><label>Alamat (Otomatis)</label><input type="text" id="f-alamat" placeholder="Klik peta untuk mengisi..." readonly style="color:var(--text2); background:var(--border2)"></div>
+          <input type="hidden" id="f-kecamatan">
+          <div class="form-group">
+            <label>Radius Tanggung Jawab</label>
+            <div class="radius-row">
+              <input type="range" id="f-radius" min="100" max="5000" step="100" value="500" oninput="document.getElementById('f-rval').textContent=this.value+'m'">
+              <div class="radius-val" id="f-rval">500m</div>
+            </div>
+          </div>
+
+          <div class="form-section-title">Lokasi</div>
+          <div class="coord-box" id="coord-ib-box">
+            <i class="fa-solid fa-location-dot" style="color:var(--text3)"></i>
+            <span class="coord-val" id="ci-coords">Belum dipilih     klik di peta atau unggah foto GPS</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="submit-btn primary" id="btn-ibadah" onclick="submitIbadah()" disabled style="flex:1"><i class="fa-solid fa-plus"></i> Tambah Rumah Ibadah</button>
+            <button class="submit-btn secondary" onclick="switchPage('dashboard')" style="padding:10px 16px">Batal</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Peta     Pilih Lokasi</h3></div>
+        <div style="height:calc(100vh - 220px);min-height:400px"><div id="map-input-ib" style="height:100%"></div></div>
+      </div>
+    </div>`;
+      setupUploadDragDrop('upload-ibadah');
+      setTimeout(() => { initMapInput('map-input-ib', 'ibadah'); }, 50);
+    }
+
+    // --  FORM MISKIN ---------------------------
+    function renderFormMiskin(area) {
+      area.innerHTML = `
+    <div class="content-grid-form">
+      <div class="card">
+        <div class="card-header"><h3>Tambah Data Warga Miskin</h3><span style="font-size:11px;color:var(--text2)">Klik peta untuk menentukan lokasi</span></div>
+        <div class="card-body">
+          <div class="form-section-title">Unggah Foto KK / Rumah (Opsional)</div>
+          <div class="form-group">
+            <div class="upload-area" id="upload-miskin">
+              <div class="u-icon"><i class="fa-solid fa-camera"></i></div>
+              <p>Klik atau seret foto ke sini<br><strong>JPEG/PNG    max 5MB    GPS otomatis terdeteksi</strong></p>
+              <input type="file" accept="image/jpeg,image/png" onchange="handleFotoUpload(this,'miskin')">
+            </div>
+            <div class="upload-preview" id="preview-miskin">
+              <img id="preview-miskin-img">
+              <button class="rem-btn" onclick="removeFoto('miskin')">   </button>
+            </div>
+            <div id="exif-badge-miskin"></div>
+          </div>
+
+          <div class="form-section-title" style="margin-top:16px">Data Kepala Keluarga</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Nama Kepala Keluarga</label><input type="text" id="m-nama" placeholder="Nama KK"></div>
+            <div class="form-group"><label>Jumlah Anggota</label><input type="number" id="m-anggota" value="1" min="1" max="30"></div>
+          </div>
+          <div class="form-group"><label>NIK Kepala Keluarga</label><input type="text" id="m-nik" placeholder="16 Digit NIK Kepala Keluarga" maxlength="16" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
+          <div class="form-group"><label>Bantuan Rumah Ibadah</label>
+            <select id="m-bantuan">
+              <option value="tidak_ada">Belum Menerima Bantuan</option>
+              <option value="sembako">Sembako Bulanan</option>
+              <option value="beasiswa">Beasiswa Anak Asuh</option>
+              <option value="modal">Modal Pemberdayaan</option>
+              <option value="tunai">Santunan Tunai/Kesehatan</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Keterangan (Opsional)</label><textarea id="m-ket" rows="2" style="resize:vertical" placeholder="Info tambahan..."></textarea></div>
+          <div class="form-group"><label>Alamat (Otomatis)</label><input type="text" id="m-alamat" placeholder="Klik peta untuk mengisi..." readonly style="color:var(--text2); background:var(--border2)"></div>
+          <input type="hidden" id="m-kecamatan">
+
+          <div class="form-section-title">Lokasi Rumah</div>
+          <div class="coord-box" id="coord-wg-box">
+            <i class="fa-solid fa-location-dot" style="color:var(--text3)"></i>
+            <span class="coord-val" id="cm-coords">Belum dipilih     klik di peta atau unggah foto GPS</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="submit-btn success" id="btn-miskin" onclick="submitMiskin()" disabled style="flex:1"><i class="fa-solid fa-plus"></i> Tambah Data Warga</button>
+            <button class="submit-btn secondary" onclick="switchPage('dashboard')" style="padding:10px 16px">Batal</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Peta     Pilih Lokasi</h3></div>
+        <div style="height:calc(100vh - 220px);min-height:400px"><div id="map-input-wg" style="height:100%"></div></div>
+      </div>
+    </div>`;
+      setupUploadDragDrop('upload-miskin');
+      setTimeout(() => { initMapInput('map-input-wg', 'miskin'); }, 50);
+    }
+
+    // --  DAFTAR --------------------------------
+    function daftarActionBtn(type, data) {
+      const id = data.id;
+      let html = `<div class="dc-actions" style="display:flex;gap:6px;margin-top:6px;justify-content:flex-end">`;
+
+      // Global Detail button: accessible to everyone
+      html += `<button class="btn-icon-action view" onclick="event.stopPropagation();openPreviewModal('${type}',${id})" title="Lihat Detail"><i class="fa-solid fa-eye"></i></button>`;
+
+      // Edit button: Admin, or Surveyor if it's their pending data
+      if (canEdit(type, data)) {
+        html += `<button class="btn-icon-action edit" onclick="event.stopPropagation();openEditPanel('${type}',${id})" title="Edit Data"><i class="fa-solid fa-pen-to-square"></i></button>`;
+      }
+
+      // Delete button: Admin, or Surveyor if it's their data
+      if (currentUser.role === 'admin' || (currentUser.role === 'surveyor' && data.surveyor_id == currentUser.id)) {
+        html += `<button class="btn-icon-action delete" onclick="event.stopPropagation();${type === 'ibadah' ? 'delIbadah' : 'delWarga'}(${id})" title="Hapus Data"><i class="fa-solid fa-trash"></i></button>`;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+    function renderDaftar(area) {
+      daftarState.page = 1;
+      daftarState.activeId = null;
+      // Pemangku hanya melihat data verified
+      if (currentUser?.role === 'pemangku') daftarState.status = 'verified';
+
+      area.innerHTML = `
+    <div class="content-grid daftar-grid-container">
+      <div>
+        <!-- TABS -->
+        <div class="daftar-tabs">
+          <button class="daftar-tab ${daftarState.tab === 'ibadah' ? 'active' : ''}" onclick="switchDaftarTab('ibadah')">
+            <i class="fa-solid fa-place-of-worship"></i> Rumah Ibadah <span class="tab-count">${cachedIbadah.length}</span>
+          </button>
+          <button class="daftar-tab ${daftarState.tab === 'warga' ? 'active' : ''}" onclick="switchDaftarTab('warga')">
+            <i class="fa-solid fa-people-group"></i> Warga Miskin <span class="tab-count">${cachedWarga.length}</span>
+          </button>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="daftar-toolbar" id="daftar-toolbar"></div>
+
+        <!-- SUMMARY -->
+        <div class="daftar-summary" id="daftar-summary"></div>
+
+        <!-- LIST -->
+        <div class="daftar-list" id="daftar-list"></div>
+
+        <!-- PAGINATION -->
+        <div class="daftar-pagination" id="daftar-pagination"></div>
+      </div>
+
+      <!-- MAP SIDEBAR -->
+      <div class="card daftar-map-card">
+        <div class="card-header"><h3><i class="fa-solid fa-map-location-dot" style="color:var(--blue);margin-right:8px"></i>Peta</h3></div>
+        <div class="map-container"><div id="map-daftar"></div></div>
+      </div>
+    </div>`;
+
+      renderDaftarToolbar();
+      renderDaftarContent();
+      setTimeout(() => { initDaftarMap(); }, 50);
+    }
+
+    function switchDaftarTab(tab) {
+      daftarState.tab = tab;
+      daftarState.page = 1;
+      daftarState.search = '';
+      daftarState.status = '';
+      daftarState.kecamatan = '';
+      daftarState.jenis = '';
+      daftarState.layanan = '';
+      daftarState.activeId = null;
+      // Update tab UI
+      document.querySelectorAll('.daftar-tab').forEach(el => {
+        el.classList.toggle('active', el.textContent.includes(tab === 'ibadah' ? 'Rumah' : 'Warga'));
+      });
+      // Pastikan layer tab yang baru aktif tercentang     tapi jangan reset layer lainnya
+      const m = mapInstances['map-daftar'];
+      if (m && m._layerVisible) {
+        m._layerVisible[tab === 'ibadah' ? 'ibadah' : 'warga'] = true;
+      }
+      renderDaftarToolbar();
+      renderDaftarContent();
+      syncDaftarMap();
+    }
+
+    function renderDaftarToolbar() {
+      const tb = document.getElementById('daftar-toolbar');
+      if (!tb) return;
+      const isIb = daftarState.tab === 'ibadah';
+      const isPemangku = currentUser?.role === 'pemangku';
+
+      // Untuk pemangku: paksa hanya verified
+      if (isPemangku && daftarState.status !== 'verified') {
+        daftarState.status = 'verified';
+      }
+
+      // Collect unique kecamatan values
+      const src = isIb ? cachedIbadah : cachedWarga;
+      const kecSet = [...new Set(src.map(d => d.kecamatan).filter(Boolean))].sort();
+
+      let filterHtml = '';
+      // Status filter     pemangku tidak perlu filter status (hanya verified)
+      if (!isPemangku) {
+        filterHtml += `<div class="daftar-filter"><select id="df-status" onchange="daftarFilterChange()">
+    <option value="">Semua Status</option>
+    <option value="verified" ${daftarState.status === 'verified' ? 'selected' : ''}>Verified</option>
+    <option value="pending" ${daftarState.status === 'pending' ? 'selected' : ''}>Pending</option>
+    <option value="rejected" ${daftarState.status === 'rejected' ? 'selected' : ''}>Ditolak</option>
+  </select></div>`;
+      }
+
+      // Kecamatan filter
+      if (kecSet.length) {
+        filterHtml += `<div class="daftar-filter"><select id="df-kec" onchange="daftarFilterChange()">
+      <option value="">Semua Kecamatan</option>
+      ${kecSet.map(k => `<option value="${h(k)}" ${daftarState.kecamatan === k ? 'selected' : ''}>${h(k)}</option>`).join('')}
+    </select></div>`;
+      }
+
+      // Jenis filter (ibadah only)
+      if (isIb) {
+        filterHtml += `<div class="daftar-filter"><select id="df-jenis" onchange="daftarFilterChange()">
+      <option value="">Semua Jenis</option>
+      ${Object.keys(COLORS).map(j => `<option value="${j}" ${daftarState.jenis === j ? 'selected' : ''}>${j.charAt(0).toUpperCase() + j.slice(1)}</option>`).join('')}
+    </select></div>`;
+      }
+
+      // Layanan filter (warga only)
+      if (!isIb) {
+        filterHtml += `<div class="daftar-filter"><select id="df-layanan" onchange="daftarFilterChange()">
+      <option value="">Semua Layanan</option>
+      <option value="terlayani" ${daftarState.layanan === 'terlayani' ? 'selected' : ''}>Terlayani</option>
+      <option value="belum_terlayani" ${daftarState.layanan === 'belum_terlayani' ? 'selected' : ''}>Belum terlayani</option>
+    </select></div>`;
+      }
+
+      // Admin Surveyor filter dropdown
+      if (currentUser?.role === 'admin') {
+        const surveySet = [];
+        const seenIds = new Set();
+        [...cachedIbadah, ...cachedWarga].forEach(d => {
+          if (d.surveyor_id && !seenIds.has(d.surveyor_id)) {
+            seenIds.add(d.surveyor_id);
+            surveySet.push({ id: d.surveyor_id, name: d.surveyor_nama });
+          }
+        });
+        surveySet.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+        filterHtml += `<div class="daftar-filter"><select id="df-surveyor" onchange="daftarFilterChange()">
+      <option value="">Semua Surveyor</option>
+      ${surveySet.map(s => `<option value="${s.id}" ${daftarState.surveyorId == s.id ? 'selected' : ''}>${h(s.name || 'Unknown')}</option>`).join('')}
+    </select></div>`;
+      }
+
+      // Surveyor Custom Checkbox "Data Saya Saja"
+      if (currentUser?.role === 'surveyor') {
+        filterHtml += `
+        <div class="daftar-filter-checkbox" style="display:flex;align-items:center;margin-left:auto;gap:6px;font-size:12px;color:var(--text2);cursor:pointer;user-select:none">
+          <input type="checkbox" id="df-my-data" ${daftarState.myDataOnly ? 'checked' : ''} onchange="daftarFilterChange()" style="cursor:pointer;width:15px;height:15px;">
+          <label for="df-my-data" style="cursor:pointer;font-weight:600;display:flex;align-items:center;gap:4px">
+            <i class="fa-solid fa-user-pen" style="color:var(--blue)"></i> Data Saya Saja
+          </label>
+        </div>`;
+      }
+
+      const placeholder = isIb ? 'Cari nama tempat ibadah atau PIC...' : 'Cari nama kepala keluarga...';
+      tb.innerHTML = `
+    <div class="daftar-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="df-search" placeholder="${placeholder}" value="${h(daftarState.search)}" oninput="daftarSearchChange(this.value)">
+    </div>
+    ${filterHtml}`;
+    }
+
+    function daftarSearchChange(val) {
+      daftarState.search = val.toLowerCase();
+      daftarState.page = 1;
+      daftarState.activeId = null;
+      renderDaftarContent();
+      syncDaftarMap();
+    }
+
+    function daftarFilterChange() {
+      daftarState.status = currentUser?.role === 'pemangku'
+        ? 'verified'
+        : (document.getElementById('df-status')?.value || '');
+      daftarState.kecamatan = document.getElementById('df-kec')?.value || '';
+      daftarState.jenis = document.getElementById('df-jenis')?.value || '';
+      daftarState.layanan = document.getElementById('df-layanan')?.value || '';
+      if (currentUser?.role === 'surveyor') {
+        daftarState.myDataOnly = document.getElementById('df-my-data')?.checked || false;
+      }
+      if (currentUser?.role === 'admin') {
+        daftarState.surveyorId = document.getElementById('df-surveyor')?.value || '';
+      }
+      daftarState.page = 1;
+      daftarState.activeId = null;
+      renderDaftarContent();
+      syncDaftarMap();
+    }
+
+    function getDaftarFiltered() {
+      const s = daftarState;
+      let data = s.tab === 'ibadah' ? [...cachedIbadah] : [...cachedWarga];
+
+      // Search filter
+      if (s.search) {
+        if (s.tab === 'ibadah') {
+          data = data.filter(d => (d.nama || '').toLowerCase().includes(s.search) || (d.pic || '').toLowerCase().includes(s.search));
+        } else {
+          data = data.filter(d => (d.nama_kk || '').toLowerCase().includes(s.search));
+        }
+      }
+
+      // Status filter
+      if (s.status) data = data.filter(d => d.status === s.status);
+
+      // Kecamatan filter
+      if (s.kecamatan) data = data.filter(d => d.kecamatan === s.kecamatan);
+
+      // Surveyor filter
+      if (currentUser?.role === 'surveyor' && s.myDataOnly) {
+        data = data.filter(d => d.surveyor_id == currentUser.id);
+      }
+      if (currentUser?.role === 'admin' && s.surveyorId) {
+        data = data.filter(d => d.surveyor_id == s.surveyorId);
+      }
+
+      // Jenis filter (ibadah)
+      if (s.tab === 'ibadah' && s.jenis) data = data.filter(d => d.jenis === s.jenis);
+
+      // Layanan filter (warga)
+      if (s.tab === 'warga' && s.layanan) {
+        if (s.layanan === 'terlayani') data = data.filter(d => !!d.ibadah_id);
+        else if (s.layanan === 'belum_terlayani' || s.layanan === 'diluar') data = data.filter(d => !d.ibadah_id);
+      }
+
+      return data;
+    }
+
+    function renderDaftarContent() {
+      const listEl = document.getElementById('daftar-list');
+      const sumEl = document.getElementById('daftar-summary');
+      const pgEl = document.getElementById('daftar-pagination');
+      if (!listEl) return;
+
+      const filtered = getDaftarFiltered();
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / daftarState.perPage));
+      if (daftarState.page > totalPages) daftarState.page = totalPages;
+
+      const start = (daftarState.page - 1) * daftarState.perPage;
+      const pageData = filtered.slice(start, start + daftarState.perPage);
+
+      // Summary
+      if (sumEl) {
+        const from = total ? start + 1 : 0;
+        const to = Math.min(start + daftarState.perPage, total);
+        const label = daftarState.tab === 'ibadah' ? 'rumah ibadah' : 'warga';
+        sumEl.innerHTML = `<span class="ds-text">Menampilkan <strong>${from}-${to}</strong> dari <strong>${total}</strong> ${label}</span>`;
+      }
+
+      // Cards
+      if (!pageData.length) {
+        const icon = daftarState.tab === 'ibadah' ? 'fa-solid fa-place-of-worship' : 'fa-solid fa-users';
+        listEl.innerHTML = `<div class="empty-state"><div class="e-icon"><i class="${icon}"></i></div><p>Tidak ada data ditemukan</p></div>`;
+      } else {
+        listEl.innerHTML = pageData.map(d => renderDaftarCard(d)).join('');
+      }
+
+      // Pagination
+      if (pgEl) {
+        if (totalPages <= 1) { pgEl.innerHTML = ''; return; }
+        let pgHtml = `<button ${daftarState.page <= 1 ? 'disabled' : ''} onclick="daftarGoPage(${daftarState.page - 1})"><i class="fa-solid fa-chevron-left" style="font-size:10px"></i></button>`;
+
+        // Smart page range
+        let pages = [];
+        if (totalPages <= 7) {
+          for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          if (daftarState.page > 3) pages.push('...');
+          for (let i = Math.max(2, daftarState.page - 1); i <= Math.min(totalPages - 1, daftarState.page + 1); i++) pages.push(i);
+          if (daftarState.page < totalPages - 2) pages.push('...');
+          pages.push(totalPages);
+        }
+
+        pages.forEach(p => {
+          if (p === '...') { pgHtml += `<span class="pg-info">...</span>`; }
+          else { pgHtml += `<button class="${p === daftarState.page ? 'active' : ''}" onclick="daftarGoPage(${p})">${p}</button>`; }
+        });
+
+        pgHtml += `<button ${daftarState.page >= totalPages ? 'disabled' : ''} onclick="daftarGoPage(${daftarState.page + 1})"><i class="fa-solid fa-chevron-right" style="font-size:10px"></i></button>`;
+        pgEl.innerHTML = pgHtml;
+      }
+    }
+
+    function renderDaftarCard(d) {
+      const isIb = daftarState.tab === 'ibadah';
+      const id = d.id;
+      const isActive = daftarState.activeId === `${daftarState.tab}-${id}`;
+
+      if (isIb) {
+        const clr = COLORS[d.jenis] || '#6b7280';
+        return `<div class="daftar-card ${isActive ? 'active' : ''}" onclick="daftarCardClick('ibadah',${id},${d.lat},${d.lng})" id="dc-ibadah-${id}">
+      <div class="dc-icon" style="background:${clr}18;color:${clr}"><i class="${ICONS[d.jenis] || 'fa-solid fa-place-of-worship'}"></i></div>
+      <div class="dc-body">
+        <div class="dc-name">${h(d.nama)}</div>
+        <div class="dc-sub">
+          <span><i class="fa-solid fa-user-tie" style="margin-right:2px"></i>${h(d.pic || '-')}</span>
+          <span><i class="fa-solid fa-ruler" style="margin-right:2px"></i>${d.radius}m</span>
+          ${d.kecamatan ? `<span><i class="fa-solid fa-location-dot" style="margin-right:2px"></i>${h(d.kecamatan)}</span>` : ''}
+        </div>
+        ${d.status === 'rejected' && d.alasan_penolakan ? `<div class="dc-rejection"><i class="fa-solid fa-circle-xmark"></i><span><strong>Catatan admin:</strong> ${h(d.alasan_penolakan)}</span></div>` : ''}
+      </div>
+      <div class="dc-end" style="display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; height:100%; min-height:48px">
+        <div style="display:flex; gap:4px; align-items:center; justify-content:flex-end">
+          <span class="badge badge-${d.status}" style="margin:0">${statusLabel(d.status)}</span>
+        </div>
+        ${daftarActionBtn('ibadah', d)}
+      </div>
+    </div>`;
+      } else {
+        const covered = !!d.ibadah_id;
+        return `<div class="daftar-card ${isActive ? 'active' : ''}" onclick="daftarCardClick('warga',${id},${d.lat},${d.lng})" id="dc-warga-${id}">
+      <div class="dc-icon" style="background:${covered ? 'var(--green-light)' : 'var(--border2)'};color:${covered ? 'var(--green)' : 'var(--text3)'}"><i class="fa-solid fa-user"></i></div>
+      <div class="dc-body">
+        <div class="dc-name">${h(d.nama_kk)}</div>
+        <div class="dc-sub">
+          <span><i class="fa-solid fa-users" style="margin-right:2px"></i>${d.jumlah_anggota} jiwa</span>
+          ${d.kecamatan ? `<span><i class="fa-solid fa-location-dot" style="margin-right:2px"></i>${h(d.kecamatan)}</span>` : ''}
+        </div>
+        ${d.status === 'rejected' && d.alasan_penolakan ? `<div class="dc-rejection"><i class="fa-solid fa-circle-xmark"></i><span><strong>Catatan admin:</strong> ${h(d.alasan_penolakan)}</span></div>` : ''}
+      </div>
+      <div class="dc-end" style="display:flex; flex-direction:column; align-items:flex-end; justify-content:space-between; height:100%; min-height:48px">
+        <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap; justify-content:flex-end">
+          <span class="badge badge-${d.status}" style="margin:0">${statusLabel(d.status)}</span>
+          ${d.status === 'verified' ? `<span class="badge ${covered ? 'badge-in' : 'badge-out'}" style="font-size:9px; margin:0"><i class="${covered ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}" style="margin-right:2px"></i>${covered ? 'Terlayani' : 'Di luar'}</span>` : ''}
+        </div>
+        ${daftarActionBtn('warga', d)}
+      </div>
+    </div>`;
+      }
+    }
+
+    function daftarCardClick(type, id, lat, lng) {
+      // Highlight active card
+      const prevActive = document.querySelector('.daftar-card.active');
+      if (prevActive) prevActive.classList.remove('active');
+
+      daftarState.activeId = `${type}-${id}`;
+      const card = document.getElementById(`dc-${type}-${id}`);
+      if (card) card.classList.add('active');
+
+      // Fly map to location
+      const dMap = mapInstances['map-daftar'];
+      if (dMap && lat && lng) {
+        dMap.flyTo([lat, lng], 17, { duration: 0.8 });
+
+        // Show highlight pulse on the map point
+        if (window._daftarHighlight) { try { dMap.removeLayer(window._daftarHighlight); } catch (e) { } }
+        window._daftarHighlight = L.circleMarker([lat, lng], {
+          radius: 18, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.15, weight: 2.5, dashArray: '4 4'
+        }).addTo(dMap);
+        // Remove pulse after 3 seconds
+        setTimeout(() => { if (window._daftarHighlight) { try { dMap.removeLayer(window._daftarHighlight); } catch (e) { } window._daftarHighlight = null; } }, 3000);
+      }
+    }
+
+    function daftarGoPage(p) {
+      daftarState.page = p;
+      daftarState.activeId = null;
+      renderDaftarContent();
+      // Scroll list to top
+      const listEl = document.getElementById('daftar-list');
+      if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function initDaftarMap() {
+      const containerId = 'map-daftar';
+      if (mapInstances[containerId]) { mapInstances[containerId].remove(); }
+      const center = [cachedIbadah.length ? cachedIbadah[0].lat : -6.2, cachedIbadah.length ? cachedIbadah[0].lng : 106.8];
+      const m = L.map(containerId, { zoomControl: true, attributionControl: false, preferCanvas: true }).setView(center, 12);
+
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      const baseMaps = {
+        "Default Street Map": osm,
+        "Clean Light Map": light,
+        "Premium Dark Map": dark
+      };
+
+      const layerIbadah = L.layerGroup();
+      const layerWarga = L.layerGroup();
+
+      m.layerGroups = { ibadah: layerIbadah, warga: layerWarga };
+
+      // State checklist: default sesuai tab aktif saat init
+      m._layerVisible = {
+        ibadah: daftarState.tab === 'ibadah',
+        warga: daftarState.tab === 'warga'
+      };
+
+      // Terapkan state awal ke peta
+      if (m._layerVisible.ibadah) layerIbadah.addTo(m);
+      if (m._layerVisible.warga) layerWarga.addTo(m);
+
+      const overlayMaps = { "Rumah Ibadah": layerIbadah, "Warga Miskin": layerWarga };
+      L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(m);
+
+      // Catat perubahan checklist dari user     jangan pernah override ini di syncDaftarMap
+      m.on('overlayadd', e => {
+        if (e.layer === layerIbadah) m._layerVisible.ibadah = true;
+        if (e.layer === layerWarga) m._layerVisible.warga = true;
+      });
+      m.on('overlayremove', e => {
+        if (e.layer === layerIbadah) m._layerVisible.ibadah = false;
+        if (e.layer === layerWarga) m._layerVisible.warga = false;
+      });
+
+      mapInstances[containerId] = m;
+      syncDaftarMap();
+    }
+
+    function syncDaftarMap() {
+      const m = mapInstances['map-daftar'];
+      if (!m || !m.layerGroups) return;
+
+      const layerIbadah = m.layerGroups.ibadah;
+      const layerWarga = m.layerGroups.warga;
+
+      layerIbadah.clearLayers();
+      layerWarga.clearLayers();
+      if (window._daftarHighlight) { try { m.removeLayer(window._daftarHighlight); } catch (e) { } window._daftarHighlight = null; }
+
+      const filtered = getDaftarFiltered();
+      const bounds = [];
+
+      if (daftarState.tab === 'ibadah') {
+        filtered.forEach(d => {
+          if (!d.lat || !d.lng) return;
+          bounds.push([d.lat, d.lng]);
+          placeMarkerOn(m, d, 'ibadah');
+        });
+        cachedWarga.forEach(d => { placeMarkerOn(m, d, 'warga'); });
+      } else {
+        filtered.forEach(d => {
+          if (!d.lat || !d.lng) return;
+          bounds.push([d.lat, d.lng]);
+          placeMarkerOn(m, d, 'warga');
+        });
+        cachedIbadah.forEach(d => { placeMarkerOn(m, d, 'ibadah'); });
+      }
+
+      // Hormati state checklist user     jangan hardcode show/hide
+      const vis = m._layerVisible || { ibadah: true, warga: false };
+      if (vis.ibadah) { if (!m.hasLayer(layerIbadah)) layerIbadah.addTo(m); }
+      else { if (m.hasLayer(layerIbadah)) m.removeLayer(layerIbadah); }
+      if (vis.warga) { if (!m.hasLayer(layerWarga)) layerWarga.addTo(m); }
+      else { if (m.hasLayer(layerWarga)) m.removeLayer(layerWarga); }
+
+      if (bounds.length) {
+        m.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+      }
+    }
+
+    // --  VERIFY --------------------------------
+    // --  VERIFY (Table layout) ------------------
+    let _verifyData = { ibadah: [], warga: [] };
+    let _verifyTab = 'ibadah'; // active tab: 'ibadah' | 'warga'
+
+    async function renderVerify(area) {
+      area.innerHTML = '<div class="empty-state"><div class="spin"></div><p style="margin-top:12px">Memuat data pending...</p></div>';
+      try {
+        const [ibRes, wRes] = await Promise.all([
+          fetch(API.verify + '?type=ibadah&status=pending', { credentials: 'include' }).then(r => r.json()),
+          fetch(API.verify + '?type=warga&status=pending', { credentials: 'include' }).then(r => r.json()),
+        ]);
+        _verifyData.ibadah = ibRes.data || [];
+        _verifyData.warga = wRes.data || [];
+        // Set default tab ke yang ada datanya
+        if (!_verifyData.ibadah.length && _verifyData.warga.length) _verifyTab = 'warga';
+        else _verifyTab = 'ibadah';
+        if (!_verifyData.ibadah.length && !_verifyData.warga.length) {
+          area.innerHTML = '<div class="empty-state"><div class="e-icon"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i></div><p>Semua data sudah diverifikasi!<br>Tidak ada data pending.</p></div>';
+          return;
+        }
+        area.innerHTML = `
+          <div class="verify-tabs" id="vt-tabs"></div>
+          <div class="verify-toolbar">
+            <div class="vt-search">
+              <span class="vt-search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+              <input type="text" id="vt-search-input" placeholder="Cari nama, surveyor, kecamatan..." oninput="renderVerifyTables()">
+            </div>
+            <select id="vt-sort" onchange="renderVerifyTables()">
+              <option value="newest">Terbaru</option>
+              <option value="oldest">Terlama</option>
+            </select>
+            <span class="verify-count-badge" id="vt-count"></span>
+          </div>
+          <div id="vt-table-section"></div>`;
+        renderVerifyTabs();
+        renderVerifyTables();
+      } catch (e) { area.innerHTML = '<div class="empty-state"><p>Gagal memuat data. Coba refresh.</p></div>'; }
+    }
+
+    function switchVerifyTab(tab) {
+      _verifyTab = tab;
+      renderVerifyTabs();
+      renderVerifyTables();
+    }
+
+    function renderVerifyTabs() {
+      const tabsEl = document.getElementById('vt-tabs');
+      if (!tabsEl) return;
+      const nIb = _verifyData.ibadah.length;
+      const nW = _verifyData.warga.length;
+      tabsEl.innerHTML = `
+        <button class="verify-tab tab-ibadah ${_verifyTab === 'ibadah' ? 'active' : ''}" onclick="switchVerifyTab('ibadah')">
+          <i class="fa-solid fa-place-of-worship"></i> Rumah Ibadah
+          <span class="vtab-count">${nIb}</span>
+        </button>
+        <button class="verify-tab ${_verifyTab === 'warga' ? 'active' : ''}" onclick="switchVerifyTab('warga')">
+          <i class="fa-solid fa-user-tag"></i> Warga Miskin
+          <span class="vtab-count">${nW}</span>
+        </button>`;
+    }
+
+    function renderVerifyTables() {
+      const q = (document.getElementById('vt-search-input')?.value || '').toLowerCase();
+      const sort = document.getElementById('vt-sort')?.value || 'newest';
+      const sorter = (a, b) => sort === 'newest'
+        ? new Date(b.created_at) - new Date(a.created_at)
+        : new Date(a.created_at) - new Date(b.created_at);
+
+      const sec = document.getElementById('vt-table-section');
+      if (!sec) return;
+
+      if (_verifyTab === 'ibadah') {
+        const matchIb = ib => !q || [ib.nama, ib.surveyor_nama, ib.kecamatan, ib.pic, ib.alamat, ib.jenis]
+          .some(v => (v || '').toLowerCase().includes(q));
+        const pi = [..._verifyData.ibadah].filter(matchIb).sort(sorter);
+        const countEl = document.getElementById('vt-count');
+        if (countEl) countEl.textContent = pi.length + ' pending';
+
+        if (!pi.length) {
+          sec.innerHTML = '<div class="empty-state" style="padding:40px 0"><p>Tidak ada data yang cocok dengan pencarian.</p></div>';
+          return;
+        }
+        sec.innerHTML = `
+          <div class="verify-table-wrap">
+            <table>
+              <thead><tr>
+                <th style="width:52px">Foto</th>
+                <th>Nama Tempat Ibadah</th>
+                <th>Jenis</th>
+                <th>Kecamatan</th>
+                <th>PIC & WA</th>
+                <th>Radius</th>
+                <th>Surveyor</th>
+                <th>Tanggal</th>
+                <th style="text-align:right">Aksi</th>
+              </tr></thead>
+              <tbody>
+                ${pi.map(ib => `
+                <tr>
+                  <td>
+                    ${ib.foto_path
+            ? `<img class="vt-thumb" src="${ib.foto_path}" onclick="window.open('${ib.foto_path}','_blank')" title="Lihat foto">`
+            : `<div class="vt-no-thumb"><i class="${ICONS[ib.jenis]}"></i></div>`}
+                  </td>
+                  <td>
+                    <div class="vt-name"><i class="${ICONS[ib.jenis]}" style="margin-right:5px;color:var(--amber)"></i>${h(ib.nama)}</div>
+                    ${ib.alamat ? `<div class="vt-sub">${h(ib.alamat.substring(0, 45))}${ib.alamat.length > 45 ? '   ' : ''}</div>` : ''}
+                  </td>
+                  <td><span class="vt-tag amber"><i class="${ICONS[ib.jenis]}"></i> ${h(ib.jenis)}</span></td>
+                  <td><div class="vt-sub">${ib.kecamatan ? 'Kec. ' + h(ib.kecamatan) : '   '}</div></td>
+                  <td>
+                    <div class="vt-sub" style="font-weight:700;color:var(--text)">${h(ib.pic || '   ')}</div>
+                    ${ib.no_wa ? `<div class="vt-sub" style="font-size:11px;color:var(--text2)"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> ${h(ib.no_wa)}</div>` : ''}
+                  </td>
+                  <td><div class="vt-sub" style="white-space:nowrap">${ib.radius} m</div></td>
+                  <td><div class="vt-sub" style="font-size:12px;color:var(--text)">${h(ib.surveyor_nama || '   ')}</div></td>
+                  <td><div class="vt-sub" style="white-space:nowrap">${formatDate(ib.created_at)}</div></td>
+                  <td>
+                    <div class="vt-actions" style="justify-content:flex-end">
+                      <button class="btn-detail" onclick="openDetailModal('ibadah',${ib.id})"><i class="fa-solid fa-eye"></i> Detail</button>
+                      <button class="btn-approve" onclick="approveData('ibadah',${ib.id})"><i class="fa-solid fa-check"></i></button>
+                      <button class="btn-reject" onclick="openRejectModal('ibadah',${ib.id})"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+
+      } else {
+        // Tab Warga Miskin
+        const matchW = w => !q || [w.nama_kk, w.surveyor_nama, w.kecamatan, w.nik, w.keterangan, w.alamat]
+          .some(v => (v || '').toLowerCase().includes(q));
+        const pw = [..._verifyData.warga].filter(matchW).sort(sorter);
+        const countEl = document.getElementById('vt-count');
+        if (countEl) countEl.textContent = pw.length + ' pending';
+
+        if (!pw.length) {
+          sec.innerHTML = '<div class="empty-state" style="padding:40px 0"><p>Tidak ada data yang cocok dengan pencarian.</p></div>';
+          return;
+        }
+        sec.innerHTML = `
+          <div class="verify-table-wrap">
+            <table>
+              <thead><tr>
+                <th style="width:52px">Foto</th>
+                <th>Nama Kepala Keluarga</th>
+                <th>NIK KK</th>
+                <th>Kecamatan</th>
+                <th>Jml Anggota</th>
+                <th>Ibadah Terdekat</th>
+                <th>Surveyor</th>
+                <th>Tanggal</th>
+                <th style="text-align:right">Aksi</th>
+              </tr></thead>
+              <tbody>
+                ${pw.map(w => `
+                <tr>
+                  <td>
+                    ${w.foto_path
+            ? `<img class="vt-thumb" src="${w.foto_path}" onclick="window.open('${w.foto_path}','_blank')" title="Lihat foto">`
+            : `<div class="vt-no-thumb"><i class="fa-solid fa-user"></i></div>`}
+                  </td>
+                  <td>
+                    <div class="vt-name"><i class="fa-solid fa-user" style="margin-right:5px;color:var(--blue)"></i>${h(w.nama_kk)}</div>
+                    ${w.alamat ? `<div class="vt-sub">${h(w.alamat.substring(0, 45))}${w.alamat.length > 45 ? '   ' : ''}</div>` : ''}
+                    ${w.keterangan ? `<div class="vt-sub" style="color:var(--text3);font-style:italic">${h(w.keterangan.substring(0, 40))}${w.keterangan.length > 40 ? '   ' : ''}</div>` : ''}
+                  </td>
+                  <td>
+                    <div class="vt-col-nik">${h(w.nik || '   ')}</div>
+                  </td>
+                  <td><div class="vt-sub">${w.kecamatan ? 'Kec. ' + h(w.kecamatan) : '   '}</div></td>
+                  <td style="text-align:center">
+                    <div class="vt-col-jiwa">${w.jumlah_anggota}</div>
+                    <div class="vt-col-jiwa-sub">jiwa</div>
+                  </td>
+                  <td>
+                    ${w.ibadah_id
+            ? `<span class="vt-tag"><i class="fa-solid fa-circle-check"></i> ${h(w.ibadah_nama || 'Terlayani')}</span>`
+            : `<span class="vt-tag red"><i class="fa-solid fa-triangle-exclamation"></i> Belum terlayani</span>`}
+                  </td>
+                  <td><div class="vt-sub" style="font-size:12px;color:var(--text)">${h(w.surveyor_nama || '   ')}</div></td>
+                  <td><div class="vt-sub" style="white-space:nowrap">${formatDate(w.created_at)}</div></td>
+                  <td>
+                    <div class="vt-actions" style="justify-content:flex-end">
+                      <button class="btn-detail" onclick="openDetailModal('warga',${w.id})"><i class="fa-solid fa-eye"></i> Detail</button>
+                      <button class="btn-approve" onclick="approveData('warga',${w.id})"><i class="fa-solid fa-check"></i></button>
+                      <button class="btn-reject" onclick="openRejectModal('warga',${w.id})"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      }
+    }
+
+    function openDetailModal(type, id) {
+      const data = type === 'ibadah'
+        ? _verifyData.ibadah.find(x => x.id == id)
+        : _verifyData.warga.find(x => x.id == id);
+      if (!data) return;
+      const titleEl = document.getElementById('dm-title');
+      const bodyEl = document.getElementById('dm-body');
+      const footEl = document.getElementById('dm-footer');
+      if (type === 'ibadah') {
+        titleEl.innerHTML = `<i class="${ICONS[data.jenis]}" style="color:var(--amber)"></i> Detail Rumah Ibadah`;
+        bodyEl.innerHTML = `
+          ${data.foto_path ? `<img class="dm-photo" src="${data.foto_path}" onclick="window.open('${data.foto_path}','_blank')" title="Klik untuk buka penuh">` : ''}
+          <div class="dm-section">
+            <div class="dm-section-title">Informasi Umum</div>
+            <div class="dm-fields">
+              <div class="dm-field full"><label>Nama Tempat Ibadah</label><span>${h(data.nama)}</span></div>
+              <div class="dm-field"><label>Jenis</label><span><i class="${ICONS[data.jenis]}" style="margin-right:5px"></i>${h(data.jenis)}</span></div>
+              <div class="dm-field"><label>Status</label><span><span class="badge badge-pending">Pending</span></span></div>
+              <div class="dm-field full"><label>Alamat</label><span>${h(data.alamat || '   ')}</span></div>
+              <div class="dm-field">${data.kecamatan ? `<label>Kecamatan</label><span>Kec. ${h(data.kecamatan)}</span>` : '<label>Kecamatan</label><span>   </span>'}</div>
+              <div class="dm-field"><label>Radius Pelayanan</label><span>${data.radius} meter</span></div>
+            </div>
+          </div>
+          <div class="dm-section">
+            <div class="dm-section-title">Penanggung Jawab</div>
+            <div class="dm-fields">
+              <div class="dm-field"><label>PIC</label><span>${h(data.pic)}</span></div>
+              <div class="dm-field"><label>No. WhatsApp</label><span>${data.no_wa ? `<i class="fa-brands fa-whatsapp" style="color:var(--green);margin-right:4px"></i>${h(data.no_wa)}` : '   '}</span></div>
+            </div>
+          </div>
+          <div class="dm-section">
+            <div class="dm-section-title">Koordinat & Surveyor</div>
+            <div class="dm-fields">
+              <div class="dm-field"><label>Latitude</label><span>${(+data.lat).toFixed(6)}</span></div>
+              <div class="dm-field"><label>Longitude</label><span>${(+data.lng).toFixed(6)}</span></div>
+              <div class="dm-field"><label>Surveyor</label><span>${h(data.surveyor_nama || '   ')}</span></div>
+              <div class="dm-field"><label>Tanggal Input</label><span>${formatDate(data.created_at)}</span></div>
+            </div>
+          </div>`;
+      } else {
+        titleEl.innerHTML = `<i class="fa-solid fa-user" style="color:var(--blue)"></i> Detail Warga Miskin`;
+        bodyEl.innerHTML = `
+          ${data.foto_path ? `<img class="dm-photo" src="${data.foto_path}" onclick="window.open('${data.foto_path}','_blank')" title="Klik untuk buka penuh">` : ''}
+          <div class="dm-section">
+            <div class="dm-section-title">Data KK</div>
+            <div class="dm-fields">
+              <div class="dm-field full"><label>Nama Kepala Keluarga</label><span>${h(data.nama_kk)}</span></div>
+              <div class="dm-field"><label>NIK KK</label><span>${h(data.nik || '   ')}</span></div>
+              <div class="dm-field"><label>Jumlah Anggota</label><span>${data.jumlah_anggota} jiwa</span></div>
+              <div class="dm-field full"><label>Alamat</label><span>${h(data.alamat || '   ')}</span></div>
+              <div class="dm-field"><label>Kecamatan</label><span>${data.kecamatan ? 'Kec. ' + h(data.kecamatan) : '   '}</span></div>
+              <div class="dm-field"><label>Status</label><span><span class="badge badge-pending">Pending</span></span></div>
+              ${data.keterangan ? `<div class="dm-field full"><label>Keterangan</label><span>${h(data.keterangan)}</span></div>` : ''}
+            </div>
+          </div>
+          <div class="dm-section">
+            <div class="dm-section-title">Status Pelayanan</div>
+            <div class="dm-fields">
+              <div class="dm-field full">
+                <label>Ibadah Terdekat</label>
+                <span style="color:${data.ibadah_id ? 'var(--green)' : 'var(--red)'}">
+                  <i class="${data.ibadah_id ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}" style="margin-right:5px"></i>
+                  ${h(data.ibadah_nama || 'Belum terlayani')}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="dm-section">
+            <div class="dm-section-title">Koordinat & Surveyor</div>
+            <div class="dm-fields">
+              <div class="dm-field"><label>Latitude</label><span>${(+data.lat).toFixed(6)}</span></div>
+              <div class="dm-field"><label>Longitude</label><span>${(+data.lng).toFixed(6)}</span></div>
+              <div class="dm-field"><label>Surveyor</label><span>${h(data.surveyor_nama || '   ')}</span></div>
+              <div class="dm-field"><label>Tanggal Input</label><span>${formatDate(data.created_at)}</span></div>
+            </div>
+          </div>`;
+      }
+      footEl.innerHTML = `
+        <button onclick="closeDetailModal();openEditPanel('${type}',${data.id})" style="background:var(--bg);color:var(--text2);border:1.5px solid var(--border)">
+          <i class="fa-solid fa-pen"></i> Edit
+        </button>
+        <button class="btn-reject" onclick="closeDetailModal();openRejectModal('${type}',${data.id})" style="padding:9px 18px">
+          <i class="fa-solid fa-xmark"></i> Tolak
+        </button>
+        <button class="btn-approve" onclick="closeDetailModal();approveData('${type}',${data.id})" style="padding:9px 18px">
+          <i class="fa-solid fa-check"></i> Setujui
+        </button>`;
+      document.getElementById('detail-modal').classList.add('show');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.remove('show');
+    }
+
+
+    async function approveData(type, id) {
+      try {
+        const res = await fetch(API.verify + `?type=${type}&id=${id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ status: 'verified' })
+        }).then(r => r.json());
+        if (!res.success) throw new Error(res.error);
+        showToast('    Data berhasil diverifikasi!', 'success');
+        const savedTab = _verifyTab;
+        await loadAll(); await renderVerify(document.getElementById('page-content'));
+        _verifyTab = savedTab; renderVerifyTabs(); renderVerifyTables();
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+    function openRejectModal(type, id) {
+      pendingReject = { type, id };
+      document.getElementById('reject-reason').value = '';
+      document.getElementById('reject-modal').classList.add('show');
+    }
+    function closeRejectModal() {
+      pendingReject = null;
+      document.getElementById('reject-modal').classList.remove('show');
+    }
+    async function confirmReject() {
+      if (!pendingReject) return;
+      const reason = document.getElementById('reject-reason').value.trim();
+      if (!reason) { showToast('Berikan alasan penolakan', 'error'); return; }
+      try {
+        const res = await fetch(API.verify + `?type=${pendingReject.type}&id=${pendingReject.id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ status: 'rejected', alasan_penolakan: reason })
+        }).then(r => r.json());
+        if (!res.success) throw new Error(res.error);
+        showToast('Data ditolak', 'info');
+        const savedTab2 = _verifyTab;
+        closeRejectModal(); await loadAll(); await renderVerify(document.getElementById('page-content'));
+        _verifyTab = savedTab2; renderVerifyTabs(); renderVerifyTables();
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+
+
+
+
+
+    // --  ANALISIS (Pemangku) -------------------
+    // --  ANALISIS DASHBOARD (Pemangku & Admin) --
+    function renderDashboardAnalisis(area, tabsHtml, s, pct) {
+      const jiwaLayanPct = s.jiwa_total > 0 ? Math.round((s.jiwa_terlayani / s.jiwa_total) * 100) : 0;
+      const ratioIbadahPerKK = s.ibadah > 0 && s.kk_total > 0 ? (s.kk_total / s.ibadah).toFixed(1) : '-';
+
+      // --  Data per kecamatan --------------------
+      const KECAMATAN_LIST = ['Pontianak Utara', 'Pontianak Timur', 'Pontianak Selatan', 'Pontianak Barat', 'Pontianak Kota', 'Pontianak Tenggara'];
+      const ibadahV = cachedIbadah.filter(i => i.status === 'verified');
+      const wargaV = cachedWarga.filter(w => w.status === 'verified');
+
+      const byKec = {};
+      KECAMATAN_LIST.forEach(k => { byKec[k] = { ibadah: 0, kk: 0, kkTerlayani: 0, jiwa: 0, jiwaTerlayani: 0 }; });
+
+      ibadahV.forEach(ib => {
+        const k = ib.kecamatan;
+        if (k && byKec[k]) byKec[k].ibadah++;
+      });
+      wargaV.forEach(w => {
+        const k = w.kecamatan;
+        if (k && byKec[k]) {
+          byKec[k].kk++;
+          byKec[k].jiwa += w.jumlah_anggota || 0;
+          if (w.ibadah_id) { byKec[k].kkTerlayani++; byKec[k].jiwaTerlayani += w.jumlah_anggota || 0; }
+        }
+      });
+
+      // Kecamatan tanpa data kecamatan tersebut dikumpulkan
+      const lainKK = wargaV.filter(w => !w.kecamatan || !byKec[w.kecamatan]).length;
+      const lainIb = ibadahV.filter(ib => !ib.kecamatan || !byKec[ib.kecamatan]).length;
+
+      // Sorted by coverage asc (prioritas intervensi paling atas)
+      const kecRows = KECAMATAN_LIST
+        .map(k => ({ nama: k, ...byKec[k], pct: byKec[k].kk > 0 ? Math.round((byKec[k].kkTerlayani / byKec[k].kk) * 100) : null }))
+        .filter(r => r.kk > 0 || r.ibadah > 0)
+        .sort((a, b) => {
+          if (a.pct === null && b.pct === null) return 0;
+          if (a.pct === null) return 1;
+          if (b.pct === null) return -1;
+          return a.pct - b.pct;
+        });
+
+      const statusLabel = (pct) => {
+        if (pct === null) return { label: 'Tidak ada data warga', color: '#9ca3af', bg: '#f3f4f6' };
+        if (pct < 40) return { label: 'Kritis', color: '#dc2626', bg: '#fef2f2' };
+        if (pct < 70) return { label: 'Perlu perhatian', color: '#d97706', bg: '#fffbeb' };
+        if (pct < 90) return { label: 'Cukup baik', color: '#0284c7', bg: '#f0f9ff' };
+        return { label: 'Sangat baik', color: '#16a34a', bg: '#f0fdf4' };
+      };
+
+      // Distribusi jenis ibadah
+      const byJenis = {};
+      ibadahV.forEach(ib => { byJenis[ib.jenis] = (byJenis[ib.jenis] || 0) + 1; });
+
+      // Kecamatan prioritas (kritis atau belum terlayani)
+      const prioritas = kecRows.filter(r => r.pct !== null && r.pct < 70).slice(0, 3);
+
+      // Bar chart max
+      const maxKK = Math.max(...kecRows.map(r => r.kk), 1);
+
+      // Bantuan statistics
+      const sembakoCount = s.bantuan_sembako || 0;
+      const beasiswaCount = s.bantuan_beasiswa || 0;
+      const modalCount = s.bantuan_modal || 0;
+      const tunaiCount = s.bantuan_tunai || 0;
+      const tidakAdaCount = s.bantuan_tidak_ada || 0;
+      const totalB = sembakoCount + beasiswaCount + modalCount + tunaiCount + tidakAdaCount || 1;
+
+      const pctSembako = Math.round((sembakoCount / totalB) * 100);
+      const pctBeasiswa = Math.round((beasiswaCount / totalB) * 100);
+      const pctModal = Math.round((modalCount / totalB) * 100);
+      const pctTunai = Math.round((tunaiCount / totalB) * 100);
+      const pctTidakAda = Math.round((tidakAdaCount / totalB) * 100);
+
+      area.innerHTML = `
+    ${tabsHtml}
+    
+    <!-- KPI Cards -->
+    <div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Coverage Rate</div><div class="s-icon icon-green"><i class="fa-solid fa-percent"></i></div></div>
+        <div class="s-value" style="color:${pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--amber)' : 'var(--red)'}">${pct}%</div>
+        <div class="s-sub">KK terlayani dari total</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">KK Belum Terlayani</div><div class="s-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div></div>
+        <div class="s-value" style="color:var(--red)">${s.kk_belum || 0}</div>
+        <div class="s-sub">Perlu intervensi segera</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Jiwa Terlayani</div><div class="s-icon icon-blue"><i class="fa-solid fa-users"></i></div></div>
+        <div class="s-value">${s.jiwa_terlayani || 0}</div>
+        <div class="s-sub">${jiwaLayanPct}% dari ${s.jiwa_total || 0} jiwa</div>
+      </div>
+      <div class="stat-card">
+        <div class="s-header"><div class="s-label">Rasio KK/Ibadah</div><div class="s-icon icon-amber"><i class="fa-solid fa-scale-balanced"></i></div></div>
+        <div class="s-value">${ratioIbadahPerKK}</div>
+        <div class="s-sub">KK miskin per rumah ibadah</div>
+      </div>
+    </div>
+
+    <!-- Tabel per kecamatan -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><h3>Sebaran per Kecamatan</h3><span style="font-size:11px;color:var(--text2)">Diurutkan dari yang paling perlu perhatian</span></div>
+      <div class="card-body" style="padding:0">
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border2)">
+                <th style="text-align:left;padding:10px 14px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Kecamatan</th>
+                <th style="text-align:right;padding:10px 10px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">KK Miskin</th>
+                <th style="text-align:right;padding:10px 10px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Terlayani</th>
+                <th style="text-align:right;padding:10px 10px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Jiwa</th>
+                <th style="text-align:right;padding:10px 10px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Ibadah</th>
+                <th style="text-align:left;padding:10px 14px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Coverage</th>
+                <th style="text-align:left;padding:10px 14px;font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${kecRows.length === 0 ? `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text2);font-size:12px">Belum ada data kecamatan. Pastikan surveyor mengisi kolom kecamatan saat input data.</td></tr>` :
+          kecRows.map((r, i) => {
+            const st = statusLabel(r.pct);
+            return `<tr style="border-bottom:1px solid var(--border2);${i % 2 === 1 ? 'background:var(--bg2)' : ''}">
+                      <td style="padding:10px 14px;font-weight:500;color:var(--text1)">${r.nama}</td>
+                      <td style="padding:10px;text-align:right;color:var(--text1)">${r.kk}</td>
+                      <td style="padding:10px;text-align:right;color:var(--text1)">${r.kkTerlayani}</td>
+                      <td style="padding:10px;text-align:right;color:var(--text2);font-size:11px">${r.jiwa}</td>
+                      <td style="padding:10px;text-align:right;color:var(--text2)">${r.ibadah}</td>
+                      <td style="padding:10px 14px">
+                        <div style="display:flex;align-items:center;gap:8px">
+                          <div style="flex:1;height:6px;background:var(--border2);border-radius:3px;overflow:hidden;min-width:60px">
+                            <div style="height:100%;width:${r.pct ?? 0}%;background:${r.pct >= 70 ? '#10b981' : r.pct >= 40 ? '#f59e0b' : '#ef4444'};border-radius:3px;transition:width .5s"></div>
+                          </div>
+                          <span style="font-size:12px;font-weight:500;min-width:32px;color:var(--text1)">${r.pct !== null ? r.pct + '%' : '—'}</span>
+                        </div>
+                      </td>
+                      <td style="padding:10px 14px">
+                        <span style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px;background:${st.bg};color:${st.color};white-space:nowrap">${st.label}</span>
+                      </td>
+                    </tr>`;
+          }).join('')
+        }
+              ${lainKK > 0 || lainIb > 0 ? `<tr style="border-top:1px solid var(--border2);background:var(--bg2)">
+                <td style="padding:8px 14px;font-size:11px;color:var(--text2);font-style:italic">Tanpa kecamatan / lainnya</td>
+                <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text2)">${lainKK}</td>
+                <td colspan="2" style="padding:8px 10px;font-size:11px;color:var(--text2)">—</td>
+                <td style="padding:8px 10px;text-align:right;font-size:11px;color:var(--text2)">${lainIb}</td>
+                <td colspan="2" style="padding:8px 14px;font-size:11px;color:var(--text2)">Data kecamatan belum diisi</td>
+              </tr>` : ''}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tiga Grafik Analisis Wilayah & Program -->
+    <div class="content-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:20px">
+
+      <!-- Bar chart coverage per kecamatan -->
+      <div class="card">
+        <div class="card-header"><h3>Perbandingan KK per Kecamatan</h3></div>
+        <div class="card-body">
+          ${kecRows.length === 0
+        ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data kecamatan</p>`
+        : kecRows.map(r => {
+          const pctBar = Math.round((r.kk / maxKK) * 100);
+          const pctLayan = r.kk > 0 ? Math.round((r.kkTerlayani / r.kk) * 100) : 0;
+          const belum = r.kk - r.kkTerlayani;
+          return `<div style="margin-bottom:14px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+                  <span style="font-size:12px;font-weight:500;color:var(--text1)">${r.nama.replace('Pontianak ', 'Ptk. ')}</span>
+                  <span style="font-size:11px;color:var(--text2)">${r.kkTerlayani} terlayani · <span style="color:${belum > 0 ? 'var(--red)' : 'var(--green)'}">${belum} belum</span></span>
+                </div>
+                <div style="height:10px;background:var(--border2);border-radius:5px;overflow:hidden">
+                  <div style="display:flex;height:100%;width:${pctBar}%">
+                    <div style="height:100%;width:${pctLayan}%;background:#10b981;border-radius:5px 0 0 5px"></div>
+                    <div style="height:100%;flex:1;background:#f87171"></div>
+                  </div>
+                </div>
+              </div>`;
+        }).join('')
+      }
+          <div style="display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:#10b981;border-radius:2px"></div>Terlayani</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:#f87171;border-radius:2px"></div>Belum terlayani</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribusi jenis ibadah -->
+      <div class="card">
+        <div class="card-header"><h3>Distribusi Rumah Ibadah</h3><span style="font-size:11px;color:var(--text2)">${s.ibadah || 0} total terverifikasi</span></div>
+        <div class="card-body">
+          ${Object.entries(byJenis).length === 0
+        ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data</p>`
+        : Object.entries(byJenis).sort((a, b) => b[1] - a[1]).map(([jenis, count]) => {
+          const pctJ = s.ibadah > 0 ? Math.round((count / s.ibadah) * 100) : 0;
+          return `<div style="margin-bottom:13px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:12px;font-weight:500;color:var(--text1)"><i class="${ICONS[jenis]}" style="margin-right:5px;color:${COLORS[jenis]}"></i>${jenis.charAt(0).toUpperCase() + jenis.slice(1)}</span>
+                  <span style="font-size:11px;color:var(--text2)">${count} (${pctJ}%)</span>
+                </div>
+                <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+                  <div style="height:100%;width:${pctJ}%;background:${COLORS[jenis]};border-radius:4px;transition:width .5s"></div>
+                </div>
+              </div>`;
+        }).join('')
+      }
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2)">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500">Coverage keseluruhan</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="flex:1;height:10px;background:var(--border2);border-radius:5px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${pct >= 70 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#ef4444'};border-radius:5px;transition:width .5s"></div>
+              </div>
+              <span style="font-size:13px;font-weight:500;color:var(--text1)">${pct}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Distribusi Bantuan Rumah Ibadah -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Distribusi Program Bantuan</h3>
+          <span style="font-size:11px;color:var(--text2)">Program aktif berjalan di lapangan</span>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom:13px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--text1)"><i class="fa-solid fa-basket-shopping" style="margin-right:6px;color:#3b82f6"></i>Sembako Bulanan</span>
+              <span style="font-size:11px;color:var(--text2)">${sembakoCount} KK (${pctSembako}%)</span>
+            </div>
+            <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pctSembako}%;background:#3b82f6;border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:13px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--text1)"><i class="fa-solid fa-graduation-cap" style="margin-right:6px;color:#10b981"></i>Beasiswa Anak Asuh</span>
+              <span style="font-size:11px;color:var(--text2)">${beasiswaCount} KK (${pctBeasiswa}%)</span>
+            </div>
+            <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pctBeasiswa}%;background:#10b981;border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:13px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--text1)"><i class="fa-solid fa-briefcase" style="margin-right:6px;color:#8b5cf6"></i>Modal Pemberdayaan</span>
+              <span style="font-size:11px;color:var(--text2)">${modalCount} KK (${pctModal}%)</span>
+            </div>
+            <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pctModal}%;background:#8b5cf6;border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:13px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--text1)"><i class="fa-solid fa-hand-holding-heart" style="margin-right:6px;color:#ec4899"></i>Santunan Tunai/Kesehatan</span>
+              <span style="font-size:11px;color:var(--text2)">${tunaiCount} KK (${pctTunai}%)</span>
+            </div>
+            <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pctTunai}%;background:#ec4899;border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12px;font-weight:600;color:var(--text2)"><i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;color:#f59e0b"></i>Belum Terbantu</span>
+              <span style="font-size:11px;color:var(--text2)">${tidakAdaCount} KK (${pctTidakAda}%)</span>
+            </div>
+            <div style="height:7px;background:var(--border2);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${pctTidakAda}%;background:#f59e0b;border-radius:4px;transition:width .5s"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rekomendasi berbasis data -->
+    <div class="card">
+      <div class="card-header"><h3>Rekomendasi Tindakan</h3><span style="font-size:11px;color:var(--text2)">Berdasarkan analisis data terverifikasi</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+
+        ${prioritas.length > 0 ? `
+        <div style="background:#fef2f2;border-left:3px solid #ef4444;padding:12px 14px;border-radius:0 6px 6px 0">
+          <div style="font-size:12px;font-weight:600;color:#dc2626;margin-bottom:6px"><i class="fa-solid fa-triangle-exclamation" style="margin-right:5px"></i>Kecamatan Prioritas Intervensi</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${prioritas.map(r => `
+              <div style="background:#fff;border:1px solid #fca5a5;border-radius:6px;padding:6px 10px;font-size:11px">
+                <div style="font-weight:600;color:#991b1b">${r.nama}</div>
+                <div style="color:#6b7280;margin-top:2px">${r.kk - r.kkTerlayani} KK belum terlayani · coverage ${r.pct}%</div>
+              </div>`).join('')}
+          </div>
+          <div style="font-size:11px;color:#6b7280;margin-top:8px">Pertimbangkan penambahan atau perluasan radius rumah ibadah di kecamatan ini.</div>
+        </div>` : ''}
+
+        ${pct >= 70 ? `
+        <div style="background:#f0fdf4;border-left:3px solid #10b981;padding:12px 14px;border-radius:0 6px 6px 0">
+          <div style="font-size:12px;font-weight:600;color:#166534;margin-bottom:4px"><i class="fa-solid fa-circle-check" style="margin-right:5px"></i>Coverage Kota: ${pct}%</div>
+          <div style="font-size:11px;color:#166534">Program pemetaan berjalan baik. Fokus pada validasi data dan penyempurnaan kecamatan dengan coverage rendah.</div>
+        </div>` : `
+        <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:0 6px 6px 0">
+          <div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:4px"><i class="fa-solid fa-clock" style="margin-right:5px"></i>Coverage Kota Masih ${pct}%</div>
+          <div style="font-size:11px;color:#92400e">Masih ada ${s.kk_belum} KK (${s.jiwa_total - s.jiwa_terlayani} jiwa) yang belum terjangkau. Percepatan survei dan verifikasi diperlukan.</div>
+        </div>`}
+
+        <div style="background:#eff6ff;border-left:3px solid #3b82f6;padding:12px 14px;border-radius:0 6px 6px 0">
+          <div style="font-size:12px;font-weight:600;color:#1e40af;margin-bottom:4px"><i class="fa-solid fa-clipboard-list" style="margin-right:5px"></i>Ringkasan Eksekutif</div>
+          <div style="font-size:11px;color:#1e40af;line-height:1.7">
+            ${s.ibadah || 0} rumah ibadah terverifikasi melayani ${s.kk_terlayani || 0} dari ${s.kk_total || 0} KK miskin
+            (${s.jiwa_terlayani || 0} dari ${s.jiwa_total || 0} jiwa) di Kota Pontianak.
+            ${kecRows.filter(r => r.pct !== null).length > 0
+          ? `Kecamatan dengan coverage tertinggi: <strong>${[...kecRows].filter(r => r.pct !== null).sort((a, b) => b.pct - a.pct)[0]?.nama}</strong>.`
+          : ''}
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+    }
+
+    // --  USERS ---------------------------------
+    async function renderUsers(area) {
+      area.innerHTML = '<div class="empty-state"><div class="spin"></div><p style="margin-top:12px">Memuat data user...</p></div>';
+      try {
+        const res = await fetch(API.auth + '?action=users', { credentials: 'include' }).then(r => r.json());
+        const users = res.data || [];
+        const roleColors = { admin: '#f59e0b', surveyor: '#10b981', pemangku: '#3b82f6' };
+        area.innerHTML = `
+      <div class="content-grid">
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><h3>Tambah Akun Baru</h3></div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group"><label>Username</label><input type="text" id="nu-username" placeholder="username"></div>
+                <div class="form-group"><label>Password</label><div style="position:relative"><input type="password" id="nu-pass" placeholder="min 6 karakter" style="width:100%;padding-right:36px"><button type="button" onclick="togglePassword('nu-pass', this)" tabindex="-1" title="Tampilkan/sembunyikan password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;display:flex;align-items:center;transition:color .2s" onmouseover="this.style.color='var(--blue)'" onmouseout="this.style.color='var(--text3)'"><i class="fa-solid fa-eye"></i></button></div></div>
+                <div class="form-group"><label>Nama Lengkap</label><input type="text" id="nu-nama" placeholder="Nama"></div>
+                <div class="form-group"><label>Role</label>
+                  <select id="nu-role">
+                    <option value="surveyor">Surveyor</option>
+                    <option value="pemangku">Pemangku Keputusan</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+              <button class="submit-btn primary" onclick="createUser()"><i class="fa-solid fa-plus"></i> Buat Akun</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Daftar User (${users.length})</h3></div>
+            <div class="card-body">
+              <div class="user-card-list">
+                ${users.map(u => `
+                  <div class="user-card-item" style="${!u.is_active ? 'opacity:.4' : ''}">
+                    <div class="uc-avatar" style="background:${roleColors[u.role] || '#6b7280'}">${h(u.nama_lengkap).charAt(0).toUpperCase()}</div>
+                    <div class="uc-info">
+                      <div class="uc-name">${h(u.nama_lengkap)} <span style="color:var(--text3);font-weight:400">@${h(u.username)}</span></div>
+                      <div class="uc-role"><span class="badge badge-${u.role === 'admin' ? 'pending' : (u.role === 'surveyor' ? 'verified' : 'in')}">${ROLE_LABELS[u.role] || u.role}</span> ${!u.is_active ? '<span style="color:var(--red);font-size:10px">(Nonaktif)</span>' : ''}</div>
+                    </div>
+                    <div class="uc-actions">
+                      ${u.id != currentUser.id ? (u.is_active
+            ? `<button class="uc-btn" style="background:var(--red-light);color:var(--red)" onclick="toggleUserActive(${u.id},false)"><i class="fa-solid fa-ban"></i></button>`
+            : `<button class="uc-btn" style="background:var(--green-light);color:var(--green)" onclick="toggleUserActive(${u.id},true)"><i class="fa-solid fa-check"></i></button>`)
+            : '<span style="font-size:10px;color:var(--text3)">Anda</span>'}
+                    </div>
+                  </div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="height:fit-content">
+          <div class="card-header"><h3>Statistik User</h3></div>
+          <div class="card-body">
+            <div class="mini-stat"><span class="m-label">Total Aktif</span><span class="m-val">${users.filter(u => u.is_active).length}</span></div>
+            <div class="mini-stat"><span class="m-label">Admin</span><span class="m-val">${users.filter(u => u.role === 'admin' && u.is_active).length}</span></div>
+            <div class="mini-stat"><span class="m-label">Surveyor</span><span class="m-val">${users.filter(u => u.role === 'surveyor' && u.is_active).length}</span></div>
+            <div class="mini-stat"><span class="m-label">Pemangku</span><span class="m-val">${users.filter(u => u.role === 'pemangku' && u.is_active).length}</span></div>
+            <div class="mini-stat"><span class="m-label">Nonaktif</span><span class="m-val" style="color:var(--red)">${users.filter(u => !u.is_active).length}</span></div>
+          </div>
+        </div>
+      </div>`;
+      } catch (e) { area.innerHTML = '<div class="empty-state"><p>Gagal memuat data user</p></div>'; }
+    }
+
+    async function createUser() {
+      const username = document.getElementById('nu-username').value.trim();
+      const password = document.getElementById('nu-pass').value;
+      const nama = document.getElementById('nu-nama').value.trim();
+      const role = document.getElementById('nu-role').value;
+      if (!username || !password || !nama) { showToast('Semua field wajib diisi', 'error'); return; }
+      if (password.length < 6) { showToast('Password min 6 karakter', 'error'); return; }
+      try {
+        const res = await fetch(API.auth + '?action=register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ username, password, nama_lengkap: nama, role }) }).then(r => r.json());
+        if (!res.success) throw new Error(res.error);
+        showToast('Akun berhasil dibuat!', 'success');
+        renderUsers(document.getElementById('page-content'));
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+    }
+
+    async function toggleUserActive(id, active) {
+      if (!active && !confirm('Nonaktifkan user ini?')) return;
+      await fetch(API.auth + `?action=update&id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ is_active: active }) }).then(r => r.json());
+      showToast(active ? 'User diaktifkan' : 'User dinonaktifkan', 'info');
+      renderUsers(document.getElementById('page-content'));
+    }
+
+
+
+    // --  MAP FUNCTIONS                                                                               
+    let mapInstances = {};
+
+    // --  PERSISTENT MAP (Dashboard + Peta Interaktif)                                           
+    // Map ini TIDAK pernah di-destroy selama sesi. Tile dan marker di-cache.
+    // Saat navigasi halaman, map div dipindahkan ke container halaman aktif.
+    let persistentMap = null;
+    let _persistentMapAttachedTo = null;
+    let _dataVersion = 0;
+    let _lastMarkerVersion = -1;
+
+    function getOrCreatePersistentMap() {
+      if (persistentMap) return persistentMap;
+
+      const mapEl = document.getElementById('persistent-map');
+      const center = [cachedIbadah.length ? +cachedIbadah[0].lat : -0.02,
+                      cachedIbadah.length ? +cachedIbadah[0].lng : 109.33];
+
+      const m = L.map(mapEl, {
+        zoomControl: true,
+        attributionControl: false,
+        preferCanvas: true
+      }).setView(center, 13);
+
+      // Tile layers     dibuat SEKALI, di-cache oleh browser
+      const osm   = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      const layerIbadah = L.layerGroup().addTo(m);
+      const layerWarga  = L.layerGroup().addTo(m);
+      const layerHeat   = L.layerGroup(); // Placeholder layer untuk overlay control
+      m.layerGroups = { ibadah: layerIbadah, warga: layerWarga, heat: layerHeat };
+      m._statusFilter = defaultStatusFilter();
+
+      L.control.layers(
+        { "Street Map": osm, "Light Map": light, "Dark Map": dark },
+        { "Rumah Ibadah": layerIbadah, "Warga Miskin": layerWarga, "Heatmap Kemiskinan": layerHeat },
+        { collapsed: true }
+      ).addTo(m);
+      addStatusFilterControl(m);
+      addHeatmapSettingsControl(m);
+
+      // Integrasi event listener heatmap
+      m.on('overlayadd', e => {
+        if (e.name === "Heatmap Kemiskinan") {
+          showHeatmapControls(m, true);
+        }
+      });
+      m.on('overlayremove', e => {
+        if (e.name === "Heatmap Kemiskinan") {
+          showHeatmapControls(m, false);
+        }
+      });
+
+      persistentMap = m;
+      map = m; // agar flyToOnMap() dan referensi lama tetap bekerja
+      mapInstances['persistent'] = m;
+
+      return m;
+    }
+
+    function attachPersistentMapTo(containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const mapEl = document.getElementById('persistent-map');
+      mapEl.style.display = 'block';
+      container.appendChild(mapEl);
+      _persistentMapAttachedTo = containerId;
+
+      // invalidateSize setelah DOM reparenting (jalankan di beberapa interval untuk mematangkan transisi layout)
+      setTimeout(() => { if (persistentMap) persistentMap.invalidateSize(); }, 50);
+      setTimeout(() => { if (persistentMap) persistentMap.invalidateSize(); }, 200);
+    }
+
+    function detachPersistentMap() {
+      if (!_persistentMapAttachedTo) return;
+      const mapEl = document.getElementById('persistent-map');
+      if (mapEl) {
+        mapEl.style.display = 'none';
+        // Pindahkan ke #main agar tidak ikut dihapus saat innerHTML diganti
+        document.getElementById('main').appendChild(mapEl);
+      }
+      _persistentMapAttachedTo = null;
+    }
+
+    function rebuildPersistentMarkers(force = false) {
+      const m = persistentMap;
+      if (!m) return;
+
+      // Skip jika data belum berubah sejak terakhir rebuild
+      if (!force && _dataVersion === _lastMarkerVersion) return;
+      _lastMarkerVersion = _dataVersion;
+
+      // Clear dan rebuild markers
+      m.layerGroups.ibadah.clearLayers();
+      m.layerGroups.warga.clearLayers();
+      m.ibadahLayer = {};
+      m.wargaLayer = {};
+      ibadahLayer = m.ibadahLayer;
+      wargaLayer = m.wargaLayer;
+
+      cachedIbadah.forEach(ib => placeMarkerOn(m, ib, 'ibadah'));
+      cachedWarga.forEach(w => placeMarkerOn(m, w, 'warga'));
+      applyStatusFilter(m);
+    }
+
+    function fitPersistentMapToData() {
+      const m = persistentMap;
+      if (!m) return;
+      const pts = cachedIbadah.filter(i => i.status === 'verified').map(i => [+i.lat, +i.lng]);
+      if (pts.length) m.fitBounds(pts, { padding: [20, 20] });
+    }
+
+    // Backward compat     tidak digunakan lagi, persistent map di-detach bukan di-hide
+    function hideMapOverlay() { }
+
+    // initMapFull     Deprecated: sekarang menggunakan persistent map.
+    // Fungsi ini dipertahankan sebagai fallback.
+    function initMapFull(containerId) {
+      getOrCreatePersistentMap();
+      rebuildPersistentMarkers();
+      attachPersistentMapTo(containerId);
+      fitPersistentMapToData();
+    }
+
+    function initMapInput(containerId, type) {
+      if (mapInstances[containerId]) { mapInstances[containerId].remove(); }
+      const center = cachedIbadah.length && cachedIbadah[0].lat ? [cachedIbadah[0].lat, cachedIbadah[0].lng] : [-6.2, 106.8];
+      const m = L.map(containerId, { zoomControl: true, attributionControl: false, preferCanvas: true }).setView(center, 14);
+
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      const layerIbadah = L.layerGroup();
+      const layerWarga = L.layerGroup();
+
+      m.layerGroups = {
+        ibadah: layerIbadah,
+        warga: layerWarga
+      };
+
+      // Ibadah markers: selalu tampil di kedua form (ibadah & miskin) sebagai referensi lokasi
+      cachedIbadah.filter(i => i.status === 'verified' || i.status === 'pending').forEach(ib => placeMarkerOn(m, ib, 'ibadah'));
+      layerIbadah.addTo(m);
+
+      // Warga markers: selalu diisi di layerWarga agar bisa diaktifkan via layer control
+      cachedWarga.filter(w => w.status === 'verified' || w.status === 'pending').forEach(w => placeMarkerOn(m, w, 'warga'));
+      if (type === 'miskin') {
+        layerWarga.addTo(m);
+      }
+
+      m.on('click', e => onMapClickInput(e, type));
+      m.getContainer().style.cursor = type === 'ibadah' ? 'crosshair' : 'cell';
+
+      const baseMaps = {
+        "Default Street Map": osm,
+        "Clean Light Map": light,
+        "Premium Dark Map": dark
+      };
+
+      const overlayMaps = {
+        "Rumah Ibadah": layerIbadah,
+        "Warga Miskin": layerWarga
+      };
+      L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(m);
+
+      mapInstances[containerId] = m;
+    }
+
+    function initMapSide(containerId) {
+      if (mapInstances[containerId]) { mapInstances[containerId].remove(); }
+      const center = [cachedIbadah.length ? cachedIbadah[0].lat : -6.2, cachedIbadah.length ? cachedIbadah[0].lng : 106.8];
+      const m = L.map(containerId, { zoomControl: false, attributionControl: false, preferCanvas: true }).setView(center, 12);
+
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      cachedIbadah.filter(i => i.status === 'verified' || i.status === 'pending').forEach(ib => placeMarkerOn(m, ib, 'ibadah'));
+      cachedWarga.filter(w => w.status === 'verified' || w.status === 'pending').forEach(w => placeMarkerOn(m, w, 'warga'));
+
+      if (cachedIbadah.length) {
+        const pts = cachedIbadah.filter(i => i.status === 'verified').map(i => [i.lat, i.lng]);
+        if (pts.length) m.fitBounds(pts, { padding: [10, 10] });
+      }
+
+      const baseMaps = {
+        "Default Street Map": osm,
+        "Clean Light Map": light,
+        "Premium Dark Map": dark
+      };
+      L.control.layers(baseMaps, null, { collapsed: true }).addTo(m);
+
+      mapInstances[containerId] = m;
+    }
+
+
+
+    // --  STATUS FILTER HELPERS                                                                               
+
+    // Kembalikan objek filter default sesuai role
+    function defaultStatusFilter() {
+      const isPemangku = currentUser?.role === 'pemangku';
+      return {
+        ibadah_verified: true,
+        ibadah_pending: !isPemangku,
+        ibadah_rejected: false,
+        warga_verified_covered: true,
+        warga_verified_uncovered: true,
+        warga_pending: !isPemangku,
+        warga_rejected: false,
+      };
+    }
+
+    // Sembunyikan/tampilkan marker berdasarkan filter aktif di m._statusFilter
+    function applyStatusFilter(m) {
+      if (!m._statusFilter) return;
+      const f = m._statusFilter;
+      const ibMarkers = m.ibadahLayer || {};
+      const wgMarkers = m.wargaLayer || {};
+      // Ibadah
+      Object.values(ibMarkers).forEach(({ marker, circle, data }) => {
+        const s = data.status;
+        const show = s === 'verified' ? f.ibadah_verified
+          : s === 'pending' ? f.ibadah_pending
+            : s === 'rejected' ? f.ibadah_rejected
+              : false;
+        const target = m.layerGroups ? m.layerGroups.ibadah : m;
+        if (show) { if (!target.hasLayer(marker)) target.addLayer(marker); if (!target.hasLayer(circle)) target.addLayer(circle); }
+        else { if (target.hasLayer(marker)) target.removeLayer(marker); if (target.hasLayer(circle)) target.removeLayer(circle); }
+      });
+      // Warga
+      Object.values(wgMarkers).forEach(({ marker, data }) => {
+        const s = data.status;
+        const covered = !!data.ibadah_id;
+        let show;
+        if (s === 'pending') show = f.warga_pending;
+        else if (s === 'rejected') show = f.warga_rejected;
+        else show = covered ? f.warga_verified_covered : f.warga_verified_uncovered;
+        const target = m.layerGroups ? m.layerGroups.warga : m;
+        if (show) { if (!target.hasLayer(marker)) target.addLayer(marker); }
+        else { if (target.hasLayer(marker)) target.removeLayer(marker); }
+      });
+    }
+
+    // Custom Leaflet control: panel filter status
+    function addStatusFilterControl(m) {
+      const StatusControl = L.Control.extend({
+        options: { position: 'bottomright' },
+        onAdd: function () {
+          const div = L.DomUtil.create('div', '');
+          div.style.cssText = 'background:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:Plus Jakarta Sans,sans-serif;font-size:11px;min-width:190px;';
+          L.DomEvent.disableClickPropagation(div);
+          L.DomEvent.disableScrollPropagation(div);
+
+          const f = m._statusFilter;
+          const countIb = (s) => cachedIbadah.filter(i => i.status === s).length;
+          const countW = (s, cov) => {
+            if (s === 'verified') return cachedWarga.filter(w => w.status === 'verified' && (cov ? !!w.ibadah_id : !w.ibadah_id)).length;
+            return cachedWarga.filter(w => w.status === s).length;
+          };
+
+          const row = (key, color, icon, label, count, dash) => {
+            const checked = f[key] ? 'checked' : '';
+            const borderStyle = dash ? `2px dashed ${color}` : `2px solid ${color}`;
+            return `<label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:3px 0;user-select:none;">
+              <input type="checkbox" data-key="${key}" ${checked} style="display:none">
+              <span style="width:14px;height:14px;border-radius:50%;background:${color};border:${borderStyle};flex-shrink:0;opacity:${dash ? 0.7 : 1}"></span>
+              <span style="flex:1;color:#374151">${icon} ${label}</span>
+              <span style="background:#f3f4f6;color:#6b7280;border-radius:99px;padding:1px 6px;font-size:10px">${count}</span>
+            </label>`;
+          };
+
+          const isPemangku = currentUser?.role === 'pemangku';
+
+          div.innerHTML = isPemangku ? `
+            <div style="font-weight:600;color:#111827;margin-bottom:8px;font-size:12px">
+              <i class="fa-solid fa-users" style="margin-right:5px;color:#6b7280"></i>Filter Warga
+            </div>
+            ${row('warga_verified_covered', '#10b981', '   ', 'Terlayani', countW('verified', true), false)}
+            ${row('warga_verified_uncovered', '#9ca3af', '   ', 'Belum terlayani', countW('verified', false), false)}
+          ` : `
+            <div style="font-weight:600;color:#111827;margin-bottom:8px;font-size:12px">
+              <i class="fa-solid fa-layer-group" style="margin-right:5px;color:#6b7280"></i>Filter Status
+            </div>
+            <div style="font-size:10px;color:#9ca3af;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">Rumah Ibadah</div>
+            ${row('ibadah_verified', '#10b981', '   ', 'Terverifikasi', countIb('verified'), false)}
+            ${row('ibadah_pending', '#f59e0b', '   ', 'Menunggu verif.', countIb('pending'), true)}
+            ${row('ibadah_rejected', '#ef4444', '   ', 'Ditolak', countIb('rejected'), true)}
+            <div style="font-size:10px;color:#9ca3af;margin:7px 0 5px;text-transform:uppercase;letter-spacing:.04em">Warga Miskin</div>
+            ${row('warga_verified_covered', '#10b981', '   ', 'Terlayani', countW('verified', true), false)}
+            ${row('warga_verified_uncovered', '#9ca3af', '   ', 'Belum terlayani', countW('verified', false), false)}
+            ${row('warga_pending', '#f59e0b', '   ', 'Menunggu verif.', countW('pending'), true)}
+            ${row('warga_rejected', '#ef4444', '   ', 'Ditolak', countW('rejected'), true)}
+          `;
+
+          // Pasang event listener checkbox
+          div.querySelectorAll('input[type=checkbox]').forEach(cb => {
+            cb.addEventListener('change', () => {
+              f[cb.dataset.key] = cb.checked;
+              // Update visual dot opacity
+              const dot = cb.nextElementSibling;
+              if (dot) dot.style.opacity = cb.checked ? '1' : '0.3';
+              applyStatusFilter(m);
+            });
+          });
+
+          return div;
+        }
+      });
+      new StatusControl().addTo(m);
+    }
+
+    // Custom Leaflet control: panel pengaturan heatmap
+    function addHeatmapSettingsControl(m) {
+      const HeatmapControl = L.Control.extend({
+        options: { position: 'bottomleft' },
+        onAdd: function () {
+          const div = L.DomUtil.create('div', 'heatmap-settings-control');
+          div.style.cssText = 'background:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 2px 12px rgba(0,0,0,.15);font-family:Plus Jakarta Sans,sans-serif;font-size:11px;min-width:180px;display:none;';
+          L.DomEvent.disableClickPropagation(div);
+          L.DomEvent.disableScrollPropagation(div);
+
+          div.innerHTML = `
+            <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:4px">
+              <i class="fa-solid fa-fire" style="color:#ef4444"></i> Pengaturan Heatmap
+            </div>
+            <div style="margin-bottom:6px">
+              <label style="display:block;margin-bottom:2px;color:#4b5563">Filter Kecamatan</label>
+              <select id="heat-m-kec" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:10px;background:#fff;" onchange="updatePersistentHeatmap()">
+                <option value="">Semua Kecamatan</option>
+                <option value="Pontianak Utara">Pontianak Utara</option>
+                <option value="Pontianak Timur">Pontianak Timur</option>
+                <option value="Pontianak Selatan">Pontianak Selatan</option>
+                <option value="Pontianak Barat">Pontianak Barat</option>
+                <option value="Pontianak Kota">Pontianak Kota</option>
+                <option value="Pontianak Tenggara">Pontianak Tenggara</option>
+              </select>
+            </div>
+            <div style="margin-bottom:6px">
+              <label style="display:block;margin-bottom:2px;color:#4b5563">Radius: <span id="heat-m-rval">25</span></label>
+              <input type="range" id="heat-m-radius" min="10" max="60" value="25" style="width:100%" oninput="document.getElementById('heat-m-rval').textContent=this.value;updatePersistentHeatRadius(this.value)">
+            </div>
+            <div style="height:8px;border-radius:4px;background:linear-gradient(90deg,#0000ff,#00ffff,#00ff00,#ffff00,#ff0000);margin:6px 0 2px"></div>
+            <div style="display:flex;justify-content:space-between;font-size:8px;color:#9ca3af"><span>Rendah</span><span>Tinggi</span></div>
+          `;
+          return div;
+        }
+      });
+      new HeatmapControl().addTo(m);
+    }
+
+    let persistentHeatLayer = null;
+
+    window.updatePersistentHeatmap = function() {
+      const m = persistentMap;
+      if (!m) return;
+      if (persistentHeatLayer) {
+        m.removeLayer(persistentHeatLayer);
+        persistentHeatLayer = null;
+      }
+
+      const layerHeat = m.layerGroups?.heat;
+      if (!layerHeat || !m.hasLayer(layerHeat)) return;
+
+      const kec = document.getElementById('heat-m-kec')?.value.trim();
+      const pts = cachedWarga
+        .filter(w => w.status === 'verified' && (!kec || (w.kecamatan && w.kecamatan.toLowerCase().includes(kec.toLowerCase()))))
+        .map(w => [+w.lat, +w.lng, +w.jumlah_anggota || 1]);
+
+      if (!pts.length) return;
+
+      const rad = parseInt(document.getElementById('heat-m-radius')?.value || 25);
+      persistentHeatLayer = L.heatLayer(pts, {
+        radius: rad,
+        blur: 15,
+        maxZoom: 17,
+        gradient: { 0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1: 'red' }
+      }).addTo(m);
+    };
+
+    window.updatePersistentHeatRadius = function(val) {
+      if (persistentHeatLayer) {
+        persistentHeatLayer.setOptions({ radius: parseInt(val) });
+      }
+    };
+
+    window.showHeatmapControls = function(m, show) {
+      const ctrlEl = document.querySelector('.heatmap-settings-control');
+      if (ctrlEl) {
+        ctrlEl.style.display = show ? 'block' : 'none';
+      }
+      if (show) {
+        updatePersistentHeatmap();
+      } else {
+        if (persistentHeatLayer) {
+          m.removeLayer(persistentHeatLayer);
+          persistentHeatLayer = null;
+        }
+      }
+    };
+
+    function placeMarkerOn(m, data, type, all = false) {
+      const status = data.status; // 'verified' | 'pending' | 'rejected'
+      const isVerified = status === 'verified';
+      const isPending = status === 'pending';
+      const isRejected = status === 'rejected';
+      // Outline dashed untuk data yang belum/tidak final
+      const dash = isVerified ? null : '5 4';
+      const isPemangku = currentUser?.role === 'pemangku';
+      let mk;
+
+      if (type === 'ibadah') {
+        // Warna pin selalu berdasarkan jenis ibadah (konsisten semua role)
+        const clr = COLORS[data.jenis] || '#6b7280';
+        const opacity = isRejected ? 0.45 : isPending ? 0.5 : 1;
+        const target = m.layerGroups ? m.layerGroups.ibadah : m;
+        const circle = L.circle([data.lat, data.lng], {
+          radius: data.radius, color: clr, fillColor: clr,
+          fillOpacity: isVerified ? .07 : .02,
+          weight: isVerified ? 2 : 1,
+          dashArray: dash, opacity
+        }).addTo(target);
+
+        // Badge kecil status     tampil untuk semua role (kecuali verified tidak ada badge)
+        const badgeIcon = isVerified ? '' : isPending
+          ? `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#f59e0b;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">!</div>`
+          : `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">   </div>`;
+
+        const ic = L.divIcon({
+          className: '',
+          html: `<div style="position:relative;width:32px;height:32px;opacity:${opacity}">
+            <div style="width:32px;height:32px;background:${clr};border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:3px solid rgba(255,255,255,.9);box-shadow:0 3px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;">
+              <i class="${ICONS[data.jenis] || 'fa-solid fa-place-of-worship'}" style="transform:rotate(45deg);font-size:13px;color:#fff;"></i>
+            </div>
+            ${badgeIcon}
+          </div>`,
+          iconSize: [32, 32], iconAnchor: [16, 28], popupAnchor: [0, -30]
+        });
+        mk = L.marker([data.lat, data.lng], { icon: ic }).addTo(target);
+        if (!m.ibadahLayer) m.ibadahLayer = {};
+        if (!m.ibadahLayer[data.id]) {
+          m.ibadahLayer[data.id] = { marker: mk, circle: circle, data: { ...data } };
+        } else {
+          m.ibadahLayer[data.id].marker = mk;
+          m.ibadahLayer[data.id].circle = circle;
+        }
+        if (m === persistentMap) ibadahLayer = m.ibadahLayer;
+      } else {
+        const sc = STATUS_COLORS.warga;
+        const covered = !!data.ibadah_id;
+        let clrDot;
+        if (isVerified) clrDot = covered ? sc.verified_covered : sc.verified_uncovered;
+        else if (isPending) clrDot = sc.pending;
+        else clrDot = sc.rejected;
+        const opacity = isRejected ? 0.45 : 1;
+        const target = m.layerGroups ? m.layerGroups.warga : m;
+        
+        // Fase 6: Gunakan L.circleMarker (Canvas) alih-alih L.marker (DOM)
+        mk = L.circleMarker([data.lat, data.lng], {
+          radius: 8,
+          fillColor: clrDot,
+          fillOpacity: opacity,
+          color: isVerified ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.7)',
+          weight: isVerified ? 2.5 : 2,
+          dashArray: isVerified ? null : '3 3',
+          opacity: opacity
+        }).addTo(target);
+
+        if (!m.wargaLayer) m.wargaLayer = {};
+        if (!m.wargaLayer[data.id]) {
+          m.wargaLayer[data.id] = { marker: mk, data: { ...data } };
+        } else {
+          m.wargaLayer[data.id].marker = mk;
+        }
+        if (m === persistentMap) wargaLayer = m.wargaLayer;
+      }
+
+      // Siapkan konten interactive tooltip
+      const tooltipContent = type === 'ibadah' ? `
+    <div class="map-tooltip ibadah-tooltip">
+      <div class="tooltip-title">
+        <i class="${ICONS[data.jenis] || 'fa-solid fa-place-of-worship'}" style="color:${COLORS[data.jenis] || '#f59e0b'}"></i>
+        <span>${h(data.nama)}</span>
+      </div>
+      <div class="tooltip-row">
+        <span>PIC</span>
+        <strong>${h(data.pic || '-')}</strong>
+      </div>
+      <div class="tooltip-row">
+        <span>Radius</span>
+        <strong>${data.radius}m</strong>
+      </div>
+      <div class="tooltip-row">
+        <span>Kecamatan</span>
+        <strong>${h(data.kecamatan || '-')}</strong>
+      </div>
+      ${isPemangku ? '' : `<div class="tooltip-row">
+        <span>Status</span>
+        <span class="badge badge-${data.status}">${statusLabel(data.status)}</span>
+      </div>`}
+      <div class="tooltip-footer">
+          <i class="fa-solid fa-eye"></i> Detail
+        </button>
+      </div>
+    </div>
+  ` : `
+    <div class="map-tooltip warga-tooltip">
+      <div class="tooltip-title">
+        <i class="fa-solid fa-user" style="color:#ef4444"></i>
+        <span>${h(data.nama_kk)}</span>
+      </div>
+      <div class="tooltip-row">
+        <span>Anggota</span>
+        <strong>${data.jumlah_anggota} jiwa</strong>
+      </div>
+      <div class="tooltip-row">
+        <span>Kecamatan</span>
+        <strong>${h(data.kecamatan || '-')}</strong>
+      </div>
+      <div class="tooltip-row">
+        <span>Pelayanan</span>
+        <strong style="color:${data.ibadah_id ? 'var(--green)' : 'var(--red)'}">${data.ibadah_id ? h(data.ibadah_nama) : 'Belum terlayani'}</strong>
+      </div>
+      <div class="tooltip-row">
+        <span>Bantuan Rumah Ibadah</span>
+        <strong style="color:${data.bantuan_diterima && data.bantuan_diterima !== 'tidak_ada' ? 'var(--green)' : 'var(--text3)'}">
+          ${({sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima'}[data.bantuan_diterima] || 'Belum Menerima')}
+        </strong>
+      </div>
+      ${isPemangku ? '' : `<div class="tooltip-row">
+        <span>Status</span>
+        <span class="badge badge-${data.status}">${statusLabel(data.status)}</span>
+      </div>`}
+      <div class="tooltip-footer">
+        <button class="tooltip-btn" onclick="event.stopPropagation(); openPreviewModal('warga', ${data.id})">
+          <i class="fa-solid fa-eye"></i> Detail
+        </button>
+      </div>
+    </div>
+  `;
+
+      // Fase 7: Lazy Tooltip Allocation
+      mk.on('mouseover', function (e) {
+        if (!mk._tooltipInstance) {
+          const tooltip = L.tooltip({
+            interactive: true,
+            direction: 'top',
+            offset: type === 'ibadah' ? [0, -28] : [0, -10],
+            className: 'interactive-map-tooltip'
+          }).setContent(tooltipContent);
+
+          tooltip.on('add', function () {
+            const el = tooltip.getElement();
+            if (el) {
+              el.style.pointerEvents = 'auto';
+              el.addEventListener('mouseenter', () => {
+                if (mk._closeTimeout) {
+                  clearTimeout(mk._closeTimeout);
+                  mk._closeTimeout = null;
+                }
+              });
+              el.addEventListener('mouseleave', () => {
+                mk._closeTimeout = setTimeout(() => {
+                  tooltip.remove();
+                  if (window.activeMapTooltip === tooltip) {
+                    window.activeMapTooltip = null;
+                  }
+                }, 200);
+              });
+            }
+          });
+          mk._tooltipInstance = tooltip;
+        }
+
+        const tooltip = mk._tooltipInstance;
+        if (mk._closeTimeout) {
+          clearTimeout(mk._closeTimeout);
+          mk._closeTimeout = null;
+        }
+
+        if (window.activeMapTooltip && window.activeMapTooltip !== tooltip) {
+          try { window.activeMapTooltip.remove(); } catch (err) { }
+        }
+        window.activeMapTooltip = tooltip;
+
+        tooltip.setLatLng(mk.getLatLng());
+        if (!tooltip._map) {
+          tooltip.addTo(m);
+        }
+      });
+
+      mk.on('mouseout', function (e) {
+        const tooltip = mk._tooltipInstance;
+        if (!tooltip) return;
+        mk._closeTimeout = setTimeout(() => {
+          tooltip.remove();
+          if (window.activeMapTooltip === tooltip) {
+            window.activeMapTooltip = null;
+          }
+        }, 300);
+      });
+
+      mk.on('click', () => openEditPanel(type, data.id));
+    }
+
+    let inputTempMarker = {};
+    function onMapClickInput(e, type) {
+      const { lat, lng } = e.latlng;
+      const mapId = type === 'ibadah' ? 'map-input-ib' : 'map-input-wg';
+      const m = mapInstances[mapId];
+      if (!m) return;
+      if (inputTempMarker[type]) m.removeLayer(inputTempMarker[type]);
+      const clr = type === 'ibadah' ? '#f59e0b' : '#ef4444';
+      inputTempMarker[type] = L.circleMarker([lat, lng], { radius: 10, color: clr, fillColor: clr, fillOpacity: .7, weight: 2 }).addTo(m);
+      if (type === 'ibadah') {
+        pickedCoord.ibadah = { lat, lng };
+        const ci = document.getElementById('ci-coords');
+        if (ci) { ci.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6); document.getElementById('coord-ib-box').classList.add('has-coord'); }
+        const btn = document.getElementById('btn-ibadah');
+        if (btn) btn.disabled = false;
+        reverseGeocode(lat, lng, data => {
+          if (data) {
+            const el = document.getElementById('f-alamat');
+            if (el) el.value = data.display_name || '';
+
+            const addr = data.address || {};
+            const kec = addr.city_district || addr.subdistrict || addr.town || addr.municipality || '';
+            const elKec = document.getElementById('f-kecamatan');
+            if (elKec && kec) elKec.value = kec.trim();
+          }
+        });
+      } else {
+        pickedCoord.miskin = { lat, lng };
+        const cm = document.getElementById('cm-coords');
+        if (cm) { cm.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6); document.getElementById('coord-wg-box').classList.add('has-coord'); }
+        const btn = document.getElementById('btn-miskin');
+        if (btn) btn.disabled = false;
+        reverseGeocode(lat, lng, data => {
+          if (data) {
+            const el = document.getElementById('m-alamat');
+            if (el) el.value = data.display_name || '';
+
+            const addr = data.address || {};
+            const kec = addr.city_district || addr.subdistrict || addr.town || addr.municipality || '';
+            const elKec = document.getElementById('m-kecamatan');
+            if (elKec && kec) elKec.value = kec.trim();
+          }
+        });
+      }
+    }
+
+    function flyToOnMap(lat, lng) {
+      if (map) { map.flyTo([lat, lng], 16, { duration: 1 }); }
+    }
+    function flyToMain(lat, lng, id, type) {
+      flyToOnMap(lat, lng);
+      openEditPanel(type, id);
+    }
+
+
+
+    // --  ADD MODE -------------------------------
+    function setAddMode(type) {
+      addMode = type;
+    }
+    function cancelAddMode() {
+      addMode = null;
+      Object.values(inputTempMarker).forEach(m => { if (m._map) m._map.removeLayer(m); });
+      inputTempMarker = {};
+      pickedCoord = { ibadah: null, miskin: null };
+    }
+
+    // --  UPLOAD + EXIF                                                                               
+    function setupUploadDragDrop(areaId) {
+      const area = document.getElementById(areaId);
+      if (!area) return;
+      area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag'); });
+      area.addEventListener('dragleave', () => area.classList.remove('drag'));
+      area.addEventListener('drop', e => {
+        e.preventDefault(); area.classList.remove('drag');
+        if (e.dataTransfer.files.length > 0) handleFotoFile(e.dataTransfer.files[0], areaId.replace('upload-', ''));
+      });
+    }
+    function handleFotoUpload(input, type) { if (input.files.length > 0) handleFotoFile(input.files[0], type); }
+    async function handleFotoFile(file, type) {
+      extractExifClient(file, type);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const pr = document.getElementById('preview-' + type);
+        const img = document.getElementById('preview-' + type + '-img');
+        if (pr && img) { img.src = e.target.result; pr.style.display = 'block'; }
+        const ua = document.getElementById('upload-' + type);
+        if (ua) ua.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+      const fd = new FormData(); fd.append('foto', file);
+      try {
+        const res = await fetch(API.upload, { method: 'POST', body: fd, credentials: 'include' }).then(r => r.json());
+        if (!res.success) throw new Error(res.error);
+        uploadedFotoPath[type] = res.foto_path;
+        if (res.has_gps && res.lat && res.lng) {
+          setCoordFromExif(type, res.lat, res.lng);
+          const b = document.getElementById('exif-badge-' + type);
+          if (b) b.innerHTML = '<span class="exif-chip exif-found"><i class="fa-solid fa-location-dot"></i> GPS terdeteksi dari foto!</span>';
+        } else {
+          const b = document.getElementById('exif-badge-' + type);
+          if (b) b.innerHTML = '<span class="exif-chip exif-none"><i class="fa-solid fa-location-crosshairs"></i> Tidak ada GPS     klik peta</span>';
+        }
+      } catch (e) { showToast('Upload gagal: ' + e.message, 'error'); }
+    }
+    function removeFoto(type) {
+      const pr = document.getElementById('preview-' + type); if (pr) pr.style.display = 'none';
+      const ua = document.getElementById('upload-' + type); if (ua) ua.style.display = 'block';
+      uploadedFotoPath[type] = null;
+      const b = document.getElementById('exif-badge-' + type); if (b) b.innerHTML = '';
+    }
+    function setCoordFromExif(type, lat, lng) {
+      if (type === 'ibadah') {
+        pickedCoord.ibadah = { lat, lng };
+        const ci = document.getElementById('ci-coords'); if (ci) ci.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        const cb = document.getElementById('coord-ib-box'); if (cb) cb.classList.add('has-coord');
+        const btn = document.getElementById('btn-ibadah'); if (btn) btn.disabled = false;
+        reverseGeocode(lat, lng, data => {
+          if (data) {
+            const el = document.getElementById('f-alamat');
+            if (el) el.value = data.display_name || '';
+
+            const addr = data.address || {};
+            const kec = addr.city_district || addr.subdistrict || addr.town || addr.municipality || '';
+            const elKec = document.getElementById('f-kecamatan');
+            if (elKec && kec) elKec.value = kec.trim();
+          }
+        });
+      } else {
+        pickedCoord.miskin = { lat, lng };
+        const cm = document.getElementById('cm-coords'); if (cm) cm.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        const cb = document.getElementById('coord-wg-box'); if (cb) cb.classList.add('has-coord');
+        const btn = document.getElementById('btn-miskin'); if (btn) btn.disabled = false;
+        reverseGeocode(lat, lng, data => {
+          if (data) {
+            const el = document.getElementById('m-alamat');
+            if (el) el.value = data.display_name || '';
+
+            const addr = data.address || {};
+            const kec = addr.city_district || addr.subdistrict || addr.town || addr.municipality || '';
+            const elKec = document.getElementById('m-kecamatan');
+            if (elKec && kec) elKec.value = kec.trim();
+          }
+        });
+      }
+    }
+    function extractExifClient(file, type) {
+      if (file.type !== 'image/jpeg') return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const view = new DataView(e.target.result);
+        const gps = parseExifGps(view);
+        if (gps) { setCoordFromExif(type, gps.lat, gps.lng); const b = document.getElementById('exif-badge-' + type); if (b) b.innerHTML = '<span class="exif-chip exif-found"><i class="fa-solid fa-location-dot"></i> GPS terdeteksi dari foto!</span>'; }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    function parseExifGps(view) {
+      if (view.byteLength < 14) return null;
+      if (view.getUint16(0) !== 0xFFD8) return null;
+      let offset = 2;
+      while (offset < view.byteLength - 2) {
+        const marker = view.getUint16(offset);
+        if (marker === 0xFFE1) {
+          const length = view.getUint16(offset + 2);
+          const exifData = offset + 4;
+          if (view.getUint32(exifData) === 0x45786966 && view.getUint16(exifData + 4) === 0x0000) {
+            return parseExifTiff(view, exifData + 6, length - 6);
+          }
+          offset += 2 + length;
+        } else if ((marker & 0xFF00) === 0xFF00) {
+          offset += 2 + view.getUint16(offset + 2);
+        } else break;
+      }
+      return null;
+    }
+    function parseExifTiff(view, start, len) {
+      try {
+        const le = view.getUint16(start) === 0x4949;
+        const read16 = (o) => view.getUint16(o, le);
+        const read32 = (o) => view.getUint32(o, le);
+        if (read16(start + 2) !== 42) return null;
+        const ifd0 = start + read32(start + 4);
+        const n = read16(ifd0);
+        let gpsOffset = null;
+        for (let i = 0; i < n; i++) {
+          const e = ifd0 + 2 + i * 12;
+          if (read16(e) === 0x8825) { gpsOffset = start + read32(e + 8); break; }
+        }
+        if (!gpsOffset) return null;
+        const ng = read16(gpsOffset);
+        let latRef = 'N', lat = null, lngRef = 'E', lng = null;
+        for (let i = 0; i < ng; i++) {
+          const e = gpsOffset + 2 + i * 12;
+          const tag = read16(e);
+          const type = read16(e + 2);
+          const count = read32(e + 4);
+          const valOff = e + 8;
+          if (tag === 1) { latRef = String.fromCharCode(view.getUint8(valOff)); }
+          else if (tag === 3) { lngRef = String.fromCharCode(view.getUint8(valOff)); }
+          else if (tag === 2 || tag === 4) {
+            const ptr = start + read32(valOff);
+            const d = readRational(view, ptr, le);
+            const m2 = readRational(view, ptr + 8, le);
+            const s = readRational(view, ptr + 16, le);
+            const dec = d + m2 / 60 + s / 3600;
+            if (tag === 2) lat = dec; else lng = dec;
+          }
+        }
+        if (lat === null || lng === null) return null;
+        return { lat: latRef === 'S' ? -lat : lat, lng: lngRef === 'W' ? -lng : lng };
+      } catch { return null; }
+    }
+    function readRational(view, offset, le) {
+      const num = view.getUint32(offset, le);
+      const den = view.getUint32(offset + 4, le);
+      return den === 0 ? 0 : num / den;
+    }
+
+    // --  SUBMIT IBADAH                                                                               
+    async function submitIbadah() {
+      const nama = document.getElementById('f-nama')?.value.trim();
+      const jenis = document.getElementById('f-jenis')?.value;
+      const alamat = document.getElementById('f-alamat')?.value.trim();
+      const pic = document.getElementById('f-pic')?.value.trim();
+      const wa = document.getElementById('f-wa')?.value.trim();
+      const radius = parseInt(document.getElementById('f-radius')?.value || 500);
+      const kec = document.getElementById('f-kecamatan')?.value.trim() || null;
+      const coord = pickedCoord.ibadah;
+      if (!nama) return showToast('Masukkan nama rumah ibadah', 'error');
+      if (!coord) return showToast('Pilih lokasi di peta terlebih dahulu', 'error');
+      if (!pic) return showToast('Masukkan nama PIC', 'error');
+      const btn = document.getElementById('btn-ibadah');
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      try {
+        const res = await fetch(API.ibadah, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ nama, jenis, alamat, pic, no_wa: wa, radius, lat: coord.lat, lng: coord.lng, foto_path: uploadedFotoPath.ibadah, kecamatan: kec })
+        }).then(r => r.json());
+        if (!res.success) throw new Error(res.error || 'Gagal');
+        const msg = res.status === 'pending' ? 'Data dikirim, menunggu verifikasi admin' : 'Rumah ibadah berhasil ditambahkan!';
+        showToast(msg, res.status === 'pending' ? 'info' : 'success');
+        uploadedFotoPath.ibadah = null; await loadAll(); switchPage('daftar');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Tambah Rumah Ibadah';
+    }
+
+    // --  SUBMIT WARGA                                                                               
+    async function submitMiskin() {
+      const nama = document.getElementById('m-nama')?.value.trim();
+      const anggota = parseInt(document.getElementById('m-anggota')?.value || 1);
+      const ket = document.getElementById('m-ket')?.value.trim();
+      const nik = document.getElementById('m-nik')?.value.trim() || null;
+      const bantuan = document.getElementById('m-bantuan')?.value || 'tidak_ada';
+      const alamat = document.getElementById('m-alamat')?.value.trim() || null;
+      const kec = document.getElementById('m-kecamatan')?.value.trim() || null;
+      const coord = pickedCoord.miskin;
+      if (!nama) return showToast('Masukkan nama Kepala Keluarga', 'error');
+      if (!coord) return showToast('Pilih lokasi di peta', 'error');
+      if (nik && !/^\d{16}$/.test(nik)) return showToast('NIK harus tepat 16 digit angka', 'error');
+      const btn = document.getElementById('btn-miskin');
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      try {
+        const res = await fetch(API.warga, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ nama_kk: nama, jumlah_anggota: anggota, keterangan: ket, lat: coord.lat, lng: coord.lng, foto_path: uploadedFotoPath.miskin, nik: nik, alamat: alamat, kecamatan: kec, bantuan_diterima: bantuan })
+        }).then(r => r.json());
+        if (!res.success) throw new Error(res.error || 'Gagal');
+        let msg = res.status === 'pending' ? 'Data dikirim, menunggu verifikasi' : (res.ibadah_nama ? `Masuk tanggung jawab: ${res.ibadah_nama}` : 'Ditambahkan     belum ada ibadah terdekat');
+        showToast(msg, res.status === 'pending' ? 'info' : (res.ibadah_nama ? 'success' : 'info'));
+        uploadedFotoPath.miskin = null; await loadAll(); switchPage('daftar');
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus"></i> Tambah Data Warga';
+    }
+
+    // --  EDIT PANEL                                                                                     
+    function openEditPanel(type, id) {
+      editState = { type, id }; dragActive = false;
+      const body = document.getElementById('ep-body');
+      const footer = document.getElementById('ep-footer');
+      const data = type === 'ibadah'
+        ? (ibadahLayer[id]?.data || cachedIbadah.find(x => x.id == id))
+        : (wargaLayer[id]?.data || cachedWarga.find(x => x.id == id));
+      if (!data) return;
+      const editable = canEdit(type, data);
+      footer.style.display = editable ? 'flex' : 'none';
+      document.getElementById('ep-title').innerHTML = type === 'ibadah' ? `<i class="${ICONS[data.jenis]}"></i> Edit Ibadah` : '<i class="fa-solid fa-user"></i> Edit Warga';
+      if (type === 'ibadah') {
+        const ib = data;
+        body.innerHTML = `
+      ${ib.foto_path ? `<img src="${ib.foto_path}" style="width:100%;border-radius:var(--radius-sm);margin-bottom:14px;max-height:150px;object-fit:cover;cursor:pointer" onclick="window.open('${ib.foto_path}','_blank')">` : ''}
+      <div style="margin-bottom:12px"><span class="badge badge-${ib.status}">${statusLabel(ib.status)}</span>${ib.status === 'rejected' && ib.alasan_penolakan ? `<div style="color:var(--red);font-size:11px;margin-top:6px;padding:8px;background:var(--red-light);border-radius:var(--radius-sm)"><i class="fa-solid fa-circle-xmark" style="margin-right:3px"></i>${h(ib.alasan_penolakan)}</div>` : ''}</div>
+      <div class="form-group"><label>Jenis</label><select id="e-jenis" ${!editable ? 'disabled' : ''}>
+        <option value="masjid" ${ib.jenis === 'masjid' ? 'selected' : ''}>Masjid</option>
+        <option value="gereja" ${ib.jenis === 'gereja' ? 'selected' : ''}>Gereja</option>
+        <option value="pura" ${ib.jenis === 'pura' ? 'selected' : ''}>Pura</option>
+        <option value="klenteng" ${ib.jenis === 'klenteng' ? 'selected' : ''}>Klenteng</option>
+        <option value="vihara" ${ib.jenis === 'vihara' ? 'selected' : ''}>Vihara</option>
+        <option value="lain" ${ib.jenis === 'lain' ? 'selected' : ''}>Lainnya</option>
+      </select></div>
+      <div class="form-group"><label>Nama</label><input type="text" id="e-nama" value="${h(ib.nama)}" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>Alamat</label><input type="text" id="e-alamat" value="${h(ib.alamat || '')}" ${!editable ? 'disabled' : ''}></div>
+      <input type="hidden" id="e-kecamatan" value="${h(ib.kecamatan || '')}">
+      <div class="form-group"><label>PIC</label><input type="text" id="e-pic" value="${h(ib.pic)}" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>No. WhatsApp</label><input type="text" id="e-wa" value="${h(ib.no_wa || '')}" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>Radius</label><div class="radius-row"><input type="range" id="e-radius" min="100" max="5000" step="100" value="${ib.radius}" ${!editable ? 'disabled' : ''} oninput="document.getElementById('e-rval').textContent=this.value+'m'"><div class="radius-val" id="e-rval">${ib.radius}m</div></div></div>
+      <div class="form-group"><label>Koordinat</label><div class="coord-box has-coord"><i class="fa-solid fa-location-dot" style="color:var(--green)"></i><span class="coord-val" id="e-ib-coord">${(+ib.lat).toFixed(6)}, ${(+ib.lng).toFixed(6)}</span></div></div>`;
+      } else {
+        const w = data;
+        body.innerHTML = `
+      ${w.foto_path ? `<img src="${w.foto_path}" style="width:100%;border-radius:var(--radius-sm);margin-bottom:14px;max-height:150px;object-fit:cover;cursor:pointer" onclick="window.open('${w.foto_path}','_blank')">` : ''}
+      <div style="margin-bottom:12px"><span class="badge badge-${w.status}">${statusLabel(w.status)}</span>${w.status === 'rejected' && w.alasan_penolakan ? `<div style="color:var(--red);font-size:11px;margin-top:6px;padding:8px;background:var(--red-light);border-radius:var(--radius-sm)"><i class="fa-solid fa-circle-xmark" style="margin-right:3px"></i>${h(w.alasan_penolakan)}</div>` : ''}</div>
+      <div class="form-group"><label>Nama KK</label><input type="text" id="e-nama-kk" value="${h(w.nama_kk)}" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>NIK Kepala Keluarga</label><input type="text" id="e-nik" value="${h(w.nik || '')}" placeholder="16 Digit NIK Kepala Keluarga" maxlength="16" oninput="this.value = this.value.replace(/[^0-9]/g, '')" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>Jumlah Anggota</label><input type="number" id="e-anggota" value="${w.jumlah_anggota}" min="1" max="30" ${!editable ? 'disabled' : ''}></div>
+      <div class="form-group"><label>Alamat Lengkap</label><input type="text" id="e-alamat" value="${h(w.alamat || '')}" ${!editable ? 'disabled' : ''}></div>
+      <input type="hidden" id="e-kecamatan" value="${h(w.kecamatan || '')}">
+      <div class="form-group"><label>Keterangan</label><textarea id="e-ket" rows="2" style="resize:vertical" ${!editable ? 'disabled' : ''}>${h(w.keterangan || '')}</textarea></div>
+      <div class="form-group"><label>Bantuan Rumah Ibadah</label>
+        <select id="e-bantuan" ${!editable ? 'disabled' : ''}>
+          <option value="tidak_ada" ${w.bantuan_diterima === 'tidak_ada' ? 'selected' : ''}>Belum Menerima Bantuan</option>
+          <option value="sembako" ${w.bantuan_diterima === 'sembako' ? 'selected' : ''}>Sembako Bulanan</option>
+          <option value="beasiswa" ${w.bantuan_diterima === 'beasiswa' ? 'selected' : ''}>Beasiswa Anak Asuh</option>
+          <option value="modal" ${w.bantuan_diterima === 'modal' ? 'selected' : ''}>Modal Pemberdayaan</option>
+          <option value="tunai" ${w.bantuan_diterima === 'tunai' ? 'selected' : ''}>Santunan Tunai/Kesehatan</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status Pelayanan</label>
+        <div class="coord-box ${w.ibadah_id ? 'has-coord' : ''}">
+          <span><i class="${w.ibadah_id ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}" style="color:${w.ibadah_id ? 'var(--green)' : 'var(--amber)'}"></i></span>
+          <span class="coord-val" style="color:${w.ibadah_id ? 'var(--green)' : 'var(--red)'}">${h(w.ibadah_nama || 'Belum terlayani')}</span>
+        </div>
+      </div>
+      <div class="form-group"><label>Koordinat</label><div class="coord-box has-coord"><i class="fa-solid fa-location-dot" style="color:var(--green)"></i><span class="coord-val" id="e-w-coord">${(+w.lat).toFixed(6)}, ${(+w.lng).toFixed(6)}</span></div></div>`;
+      }
+      document.getElementById('edit-panel').classList.add('open');
+      setTimeout(() => initModalEditMap(type, data, editable), 100);
+    }
+    function closeEditPanel() {
+      document.getElementById('edit-panel').classList.remove('open');
+      if (mapInstances['map-edit-modal']) {
+        mapInstances['map-edit-modal'].remove();
+        delete mapInstances['map-edit-modal'];
+      }
+      window._editModalCoord = null;
+      window._editModalCircle = null;
+      editState = { type: null, id: null }; dragActive = false;
+    }
+    async function saveEdit() {
+      const { type, id } = editState;
+      if (!type || !id) return;
+      const btn = document.getElementById('ep-save');
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      try {
+        let res;
+        if (type === 'ibadah') {
+          const ib = ibadahLayer[id]?.data || cachedIbadah.find(x => x.id == id);
+          res = await fetch(API.ibadah + '?id=' + id, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+            body: JSON.stringify({
+              nama: document.getElementById('e-nama').value.trim(),
+              jenis: document.getElementById('e-jenis').value,
+              alamat: document.getElementById('e-alamat').value.trim(),
+              pic: document.getElementById('e-pic').value.trim(),
+              no_wa: document.getElementById('e-wa').value.trim(),
+              radius: parseInt(document.getElementById('e-radius').value),
+              kecamatan: document.getElementById('e-kecamatan')?.value || ib.kecamatan || '',
+              lat: window._editModalCoord?.lat || ib.lat,
+              lng: window._editModalCoord?.lng || ib.lng
+            })
+          }).then(r => r.json());
+        } else {
+          const w = wargaLayer[id]?.data || cachedWarga.find(x => x.id == id);
+          res = await fetch(API.warga + '?id=' + id, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+            body: JSON.stringify({
+              nama_kk: document.getElementById('e-nama-kk').value.trim(),
+              jumlah_anggota: parseInt(document.getElementById('e-anggota').value) || 1,
+              keterangan: document.getElementById('e-ket').value.trim(),
+              nik: document.getElementById('e-nik')?.value.trim() || null,
+              alamat: document.getElementById('e-alamat')?.value.trim() || null,
+              kecamatan: document.getElementById('e-kecamatan')?.value || null,
+              bantuan_diterima: document.getElementById('e-bantuan')?.value || 'tidak_ada',
+              lat: window._editModalCoord?.lat || w.lat,
+              lng: window._editModalCoord?.lng || w.lng
+            })
+          }).then(r => r.json());
+        }
+        if (res && !res.success) {
+          showToast('Gagal menyimpan: ' + (res.error || 'Terjadi kesalahan'), 'error');
+          btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+          return;
+        }
+        showToast('Perubahan disimpan!', 'success');
+        closeEditPanel(); await loadAll();
+        if (currentPage === 'daftar' || currentPage === 'dashboard') renderPage(currentPage);
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+    }
+    async function deleteFromEdit() {
+      const { type, id } = editState;
+      if (!type || !id) return;
+      if (!confirm('Hapus data ini?')) return;
+      const ep = type === 'ibadah' ? API.ibadah : API.warga;
+      const res = await fetch(ep + '?id=' + id, { method: 'DELETE', credentials: 'include' }).then(r => r.json());
+      if (!res.success) { showToast('Gagal hapus: ' + (res.error || ''), 'error'); return; }
+      showToast('Data dihapus', 'info'); closeEditPanel(); await loadAll();
+      if (currentPage === 'daftar') renderPage(currentPage);
+    }
+    async function delIbadah(id) { if (!confirm('Hapus rumah ibadah ini?')) return; await fetch(API.ibadah + '?id=' + id, { method: 'DELETE', credentials: 'include' }); showToast('Dihapus', 'info'); await loadAll(); renderPage(currentPage); }
+    async function delWarga(id) { if (!confirm('Hapus data warga ini?')) return; await fetch(API.warga + '?id=' + id, { method: 'DELETE', credentials: 'include' }); showToast('Dihapus', 'info'); await loadAll(); renderPage(currentPage); }
+
+    // --  LOAD ALL                                                                                           
+    async function loadAll() {
+      showLoading(true);
+      try {
+        const [ibRes, wRes, sRes] = await Promise.all([
+          fetch(API.ibadah, { credentials: 'include' }).then(r => r.json()),
+          fetch(API.warga, { credentials: 'include' }).then(r => r.json()),
+          fetch(API.stats, { credentials: 'include' }).then(r => r.json()),
+        ]);
+        cachedIbadah = ibRes.data || []; cachedWarga = wRes.data || []; cachedStats = sRes;
+        _dataVersion++;
+        updateNavBadges();
+      } catch (e) { showToast('Gagal memuat: ' + e.message, 'error'); }
+      showLoading(false);
+    }
+
+    function updateNavBadges() {
+      const s = cachedStats;
+      if (currentUser?.role === 'admin') {
+        const total = (s.pending_ibadah || 0) + (s.pending_warga || 0);
+        const nb = document.getElementById('nb-verify');
+        if (nb) { nb.textContent = total; nb.style.display = total > 0 ? 'inline' : 'none'; }
+        const nd = document.getElementById('notif-dot');
+        if (nd) nd.style.display = total > 0 ? 'block' : 'none';
+      }
+      if (currentUser?.role === 'surveyor') {
+        const total = (s.my_pending_ibadah || 0) + (s.my_pending_warga || 0);
+        const nb = document.getElementById('nb-daftar');
+        if (nb) { nb.textContent = total; nb.style.display = total > 0 ? 'inline' : 'none'; }
+      }
+    }
+
+    async function applyGlobalRadius() {
+      const val = parseInt(document.getElementById('global-r')?.value || 500);
+      if (!confirm(`Ubah radius semua rumah ibadah menjadi ${val}m?`)) return;
+      for (const id of cachedIbadah.filter(i => i.status === 'verified').map(i => i.id)) {
+        await fetch(API.ibadah + '?id=' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ radius: val }) });
+      }
+      showToast(`Radius semua     ${val}m`, 'success'); await loadAll(); renderPage(currentPage);
+    }
+
+    // --  MODAL MAP INITIALIZATION                                           
+    function initModalPreviewMap(type, data) {
+      const containerId = 'map-preview-modal';
+      if (mapInstances[containerId]) { mapInstances[containerId].remove(); }
+      const center = [data.lat, data.lng];
+      const m = L.map(containerId, { zoomControl: true, attributionControl: false, preferCanvas: true }).setView(center, 16);
+
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      // Overlay layer groups
+      const layerIbadah = L.layerGroup();
+      const layerWarga = L.layerGroup();
+      m.layerGroups = { ibadah: layerIbadah, warga: layerWarga };
+
+      // Populate overlays from cached data
+      cachedIbadah.filter(i => i.status === 'verified' || i.status === 'pending').forEach(ib => placeMarkerOn(m, ib, 'ibadah'));
+      cachedWarga.filter(w => w.status === 'verified' || w.status === 'pending').forEach(w => placeMarkerOn(m, w, 'warga'));
+
+      // Show both overlays by default in preview
+      layerIbadah.addTo(m);
+      layerWarga.addTo(m);
+
+      const baseMaps = {
+        "Default Street Map": osm,
+        "Clean Light Map": light,
+        "Premium Dark Map": dark
+      };
+      const overlayMaps = {
+        "Rumah Ibadah": layerIbadah,
+        "Warga Miskin": layerWarga
+      };
+      L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(m);
+
+      const pending = data.status === 'pending';
+      const opacity = pending ? 0.5 : 1;
+
+      if (type === 'ibadah') {
+        const clr = COLORS[data.jenis] || '#6b7280';
+        const isVerified = data.status === 'verified';
+        const isPending = data.status === 'pending';
+        const opacity = data.status === 'rejected' ? 0.45 : isPending ? 0.5 : 1;
+        L.circle([data.lat, data.lng], { radius: data.radius, color: clr, fillColor: clr, fillOpacity: isVerified ? .07 : .02, weight: isVerified ? 2 : 1, dashArray: isVerified ? null : '5 4', opacity }).addTo(m);
+        const badgeIcon = isVerified ? '' : isPending
+          ? `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#f59e0b;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">!</div>`
+          : `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">   </div>`;
+        const ic = L.divIcon({
+          className: '',
+          html: `<div style="position:relative;width:36px;height:36px;opacity:${opacity}">
+            <div style="width:36px;height:36px;background:${clr};border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:3px solid rgba(255,255,255,.9);box-shadow:0 3px 14px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;">
+              <i class="${ICONS[data.jenis] || 'fa-solid fa-place-of-worship'}" style="transform:rotate(45deg);font-size:14px;color:#fff;"></i>
+            </div>
+            ${badgeIcon}
+          </div>`,
+          iconSize: [36, 36], iconAnchor: [18, 32]
+        });
+        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`<strong>${data.nama}</strong><br>${data.radius}m radius`).openPopup();
+      } else {
+        const sc = STATUS_COLORS.warga;
+        const covered = !!data.ibadah_id;
+        const isVerified = data.status === 'verified';
+        const clrDot = isVerified ? (covered ? sc.verified_covered : sc.verified_uncovered)
+          : data.status === 'pending' ? sc.pending : sc.rejected;
+        const opacity = data.status === 'rejected' ? 0.45 : 1;
+        const borderStyle = isVerified ? '3px solid rgba(255,255,255,.85)' : '2px dashed rgba(255,255,255,.85)';
+        const ic = L.divIcon({
+          className: '',
+          html: `<div style="width:18px;height:18px;background:${clrDot};border-radius:50%;border:${borderStyle};box-shadow:0 2px 8px rgba(0,0,0,.4);opacity:${opacity}"></div>`,
+          iconSize: [18, 18], iconAnchor: [9, 9]
+        });
+        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`<strong>${data.nama_kk}</strong><br>${data.jumlah_anggota} jiwa`).openPopup();
+
+        if (data.ibadah_id) {
+          const ib = cachedIbadah.find(x => x.id == data.ibadah_id);
+          if (ib) {
+            const clrIb = COLORS[ib.jenis] || '#6b7280';
+            const ibVerified = ib.status === 'verified';
+            const ibPending = ib.status === 'pending';
+            const ibOpacity = ib.status === 'rejected' ? 0.45 : ibPending ? 0.5 : 1;
+            L.circle([ib.lat, ib.lng], { radius: ib.radius, color: clrIb, fillColor: clrIb, fillOpacity: ibVerified ? .08 : .02, weight: ibVerified ? 2 : 1, dashArray: ibVerified ? null : '5 4', opacity: ibOpacity }).addTo(m);
+            const ibBadge = ibVerified ? '' : ibPending
+              ? `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#f59e0b;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">!</div>`
+              : `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">   </div>`;
+            const icIb = L.divIcon({
+              className: '',
+              html: `<div style="position:relative;width:32px;height:32px;opacity:${ibOpacity}">
+                <div style="width:32px;height:32px;background:${clrIb};border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:3px solid rgba(255,255,255,.9);box-shadow:0 3px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;">
+                  <i class="${ICONS[ib.jenis] || 'fa-solid fa-place-of-worship'}" style="transform:rotate(45deg);font-size:13px;color:#fff;"></i>
+                </div>
+                ${ibBadge}
+              </div>`,
+              iconSize: [32, 32], iconAnchor: [16, 28]
+            });
+            L.marker([ib.lat, ib.lng], { icon: icIb }).addTo(m);
+            L.polyline([[data.lat, data.lng], [ib.lat, ib.lng]], { color: '#10b981', weight: 2.5, dashArray: '6 5', opacity: 0.85 }).addTo(m);
+            const bounds = L.latLngBounds([[data.lat, data.lng], [ib.lat, ib.lng]]);
+            m.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+          }
+        }
+      }
+
+      mapInstances[containerId] = m;
+      setTimeout(() => { m.invalidateSize(); }, 100);
+    }
+
+    function initModalEditMap(type, data, editable) {
+      const containerId = 'map-edit-modal';
+      if (mapInstances[containerId]) { mapInstances[containerId].remove(); }
+      const center = [data.lat, data.lng];
+      const m = L.map(containerId, { zoomControl: true, attributionControl: false, preferCanvas: true }).setView(center, 16);
+
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      light.addTo(m);
+
+      // Overlay layer groups for context
+      const layerIbadah = L.layerGroup();
+      const layerWarga = L.layerGroup();
+      m.layerGroups = { ibadah: layerIbadah, warga: layerWarga };
+
+      // Populate from cache (excluding the currently edited item)
+      cachedIbadah.filter(i => i.status !== 'rejected' && !(type === 'ibadah' && i.id == data.id)).forEach(ib => placeMarkerOn(m, ib, 'ibadah'));
+      cachedWarga.filter(w => w.status !== 'rejected' && !(type === 'warga' && w.id == data.id)).forEach(w => placeMarkerOn(m, w, 'warga'));
+
+      // Show relevant overlay by default
+      if (type === 'ibadah') { layerIbadah.addTo(m); }
+      else { layerWarga.addTo(m); layerIbadah.addTo(m); }
+
+      const baseMaps = {
+        "Default Street Map": osm,
+        "Clean Light Map": light,
+        "Premium Dark Map": dark
+      };
+      const overlayMaps = {
+        "Rumah Ibadah": layerIbadah,
+        "Warga Miskin": layerWarga
+      };
+      L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(m);
+
+      const pending = data.status === 'pending';
+      const opacity = pending ? 0.5 : 1;
+
+      window._editModalCoord = { lat: data.lat, lng: data.lng };
+      window._editModalCircle = null;
+
+      let mk;
+      if (type === 'ibadah') {
+        const clr = COLORS[data.jenis] || '#6b7280';
+        const isVerified = data.status === 'verified';
+        const isPending = data.status === 'pending';
+        const opacityEdit = data.status === 'rejected' ? 0.45 : isPending ? 0.5 : 1;
+        window._editModalCircle = L.circle([data.lat, data.lng], { radius: data.radius, color: clr, fillColor: clr, fillOpacity: isVerified ? .07 : .02, weight: isVerified ? 2 : 1, dashArray: isVerified ? null : '5 4', opacity: opacityEdit }).addTo(m);
+
+        const badgeEdit = isVerified ? '' : isPending
+          ? `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#f59e0b;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">!</div>`
+          : `<div style="position:absolute;top:-4px;right:-4px;width:13px;height:13px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:700">   </div>`;
+        const ic = L.divIcon({
+          className: '',
+          html: `<div style="position:relative;width:32px;height:32px;opacity:${opacityEdit}">
+            <div style="width:32px;height:32px;background:${clr};border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:3px solid rgba(255,255,255,.9);box-shadow:0 3px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;">
+              <i class="${ICONS[data.jenis] || 'fa-solid fa-place-of-worship'}" style="transform:rotate(45deg);font-size:13px;color:#fff;"></i>
+            </div>
+            ${badgeEdit}
+          </div>`,
+          iconSize: [32, 32], iconAnchor: [16, 28]
+        });
+        mk = L.marker([data.lat, data.lng], { icon: ic, draggable: editable }).addTo(m);
+
+        const slider = document.getElementById('e-radius');
+        if (slider) {
+          slider.addEventListener('input', function (e) {
+            if (window._editModalCircle) {
+              window._editModalCircle.setRadius(parseInt(e.target.value));
+            }
+          });
+        }
+      } else {
+        const sc = STATUS_COLORS.warga;
+        const covered = !!data.ibadah_id;
+        const isVerified = data.status === 'verified';
+        const clrDot = isVerified ? (covered ? sc.verified_covered : sc.verified_uncovered)
+          : data.status === 'pending' ? sc.pending : sc.rejected;
+        const opacity = data.status === 'rejected' ? 0.45 : 1;
+        const borderStyle = isVerified ? '2.5px solid rgba(255,255,255,.7)' : '2px dashed rgba(255,255,255,.85)';
+        const ic = L.divIcon({
+          className: '',
+          html: `<div style="width:20px;height:20px;background:${clrDot};border-radius:50%;border:${borderStyle};box-shadow:0 2px 6px rgba(0,0,0,.35);opacity:${opacity}"></div>`,
+          iconSize: [20, 20], iconAnchor: [10, 10]
+        });
+        mk = L.marker([data.lat, data.lng], { icon: ic, draggable: editable }).addTo(m);
+      }
+
+      if (editable) {
+        m.getContainer().style.cursor = 'crosshair';
+
+        const updateLoc = (lat, lng) => {
+          window._editModalCoord = { lat, lng };
+          const coordSpanId = type === 'ibadah' ? 'e-ib-coord' : 'e-w-coord';
+          const span = document.getElementById(coordSpanId);
+          if (span) span.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+
+          mk.setLatLng([lat, lng]);
+          if (window._editModalCircle) window._editModalCircle.setLatLng([lat, lng]);
+
+          reverseGeocode(lat, lng, res => {
+            if (res) {
+              const elAlamat = document.getElementById('e-alamat');
+              if (elAlamat) elAlamat.value = res.display_name || '';
+
+              const addr = res.address || {};
+              const kec = addr.city_district || addr.subdistrict || addr.town || addr.municipality || '';
+              const elKec = document.getElementById('e-kecamatan');
+              if (elKec && kec) elKec.value = kec.trim();
+            }
+          });
+        };
+
+        mk.on('dragend', function (e) {
+          const latlng = mk.getLatLng();
+          updateLoc(latlng.lat, latlng.lng);
+        });
+
+        m.on('click', function (e) {
+          updateLoc(e.latlng.lat, e.latlng.lng);
+        });
+      }
+
+      mapInstances[containerId] = m;
+      setTimeout(() => { m.invalidateSize(); }, 100);
+    }
+
+    // --  PREVIEW MODAL (Pemangku)                                        
+    function openPreviewModal(type, id) {
+      const data = type === 'ibadah'
+        ? cachedIbadah.find(x => x.id == id)
+        : cachedWarga.find(x => x.id == id);
+      if (!data) return;
+      const modal = document.getElementById('preview-modal');
+      const body = document.getElementById('pb-body');
+      const title = document.getElementById('pb-title');
+
+      if (type === 'ibadah') {
+        const ib = data;
+        title.innerHTML = `<i class="${ICONS[ib.jenis]}" style="color:${COLORS[ib.jenis]}"></i> Detail Rumah Ibadah`;
+        body.innerHTML = `
+      ${ib.foto_path
+            ? `<div class="pb-foto-thumb" onclick="openLightbox('${ib.foto_path}')">
+            <img src="${ib.foto_path}" alt="Foto">
+            <div class="pb-foto-thumb-info">
+              <div class="pb-foto-thumb-label">Foto Dokumentasi</div>
+              <div class="pb-foto-thumb-hint"><i class="fa-solid fa-magnifying-glass-plus"></i> Klik untuk lihat penuh</div>
+            </div>
+            <i class="fa-solid fa-expand" style="color:var(--text3);font-size:13px"></i>
+          </div>`
+            : '<div style="padding:16px 12px;text-align:center;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:14px;color:var(--text3);font-size:12px;border:1.5px dashed var(--border)"><i class="fa-solid fa-image" style="font-size:22px;display:block;margin-bottom:6px"></i>Tidak ada foto</div>'}
+      <div style="margin-bottom:14px"><span class="badge badge-${ib.status}">${statusLabel(ib.status)}</span>${ib.status === 'rejected' && ib.alasan_penolakan ? `
+        <div class="rejection-notice" style="margin-top:10px">
+          <i class="fa-solid fa-circle-xmark rn-icon"></i>
+          <div><div class="rn-label">Catatan Admin     Alasan Penolakan</div>${h(ib.alasan_penolakan)}</div>
+        </div>` : ''}</div>
+      <div class="pb-field"><div class="pb-label">Nama</div><div class="pb-value">${h(ib.nama)}</div></div>
+      <div class="pb-field"><div class="pb-label">Jenis</div><div class="pb-value" style="text-transform:capitalize"><i class="${ICONS[ib.jenis]}" style="margin-right:6px;color:${COLORS[ib.jenis]}"></i>${h(ib.jenis)}</div></div>
+      <div class="pb-field"><div class="pb-label">Alamat Lengkap</div><div class="pb-value">${h(ib.alamat || '-')}</div></div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">Kecamatan</div><div class="pb-value">${h(ib.kecamatan || '-')}</div></div>
+        <div class="pb-field"><div class="pb-label">PIC</div><div class="pb-value">${h(ib.pic || '-')}</div></div>
+      </div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">No. WhatsApp</div><div class="pb-value">${h(ib.no_wa || '-')}</div></div>
+        <div class="pb-field"><div class="pb-label">Radius Pelayanan</div><div class="pb-value">${ib.radius}m</div></div>
+      </div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">KK Terlayani</div><div class="pb-value">${ib.jumlah_kk || 0} KK    ${ib.jumlah_jiwa || 0} jiwa</div></div>
+        <div class="pb-field"><div class="pb-label">Surveyor</div><div class="pb-value">${h(ib.surveyor_nama || '-')}</div></div>
+      </div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">Koordinat</div><div class="pb-value"><i class="fa-solid fa-location-dot" style="color:var(--green);margin-right:6px"></i>${(+ib.lat).toFixed(6)}, ${(+ib.lng).toFixed(6)}</div></div>
+        <div class="pb-field"><div class="pb-label">Tanggal Input</div><div class="pb-value">${formatDate(ib.created_at)}</div></div>
+      </div>
+    `;
+      } else {
+        const w = data;
+        title.innerHTML = `<i class="fa-solid fa-user" style="color:var(--red)"></i> Detail Data Warga`;
+        body.innerHTML = `
+      ${w.foto_path
+            ? `<div class="pb-foto-thumb" onclick="openLightbox('${w.foto_path}')">
+            <img src="${w.foto_path}" alt="Foto">
+            <div class="pb-foto-thumb-info">
+              <div class="pb-foto-thumb-label">Foto Dokumentasi</div>
+              <div class="pb-foto-thumb-hint"><i class="fa-solid fa-magnifying-glass-plus"></i> Klik untuk lihat penuh</div>
+            </div>
+            <i class="fa-solid fa-expand" style="color:var(--text3);font-size:13px"></i>
+          </div>`
+            : '<div style="padding:16px 12px;text-align:center;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:14px;color:var(--text3);font-size:12px;border:1.5px dashed var(--border)"><i class="fa-solid fa-image" style="font-size:22px;display:block;margin-bottom:6px"></i>Tidak ada foto</div>'}
+      <div style="margin-bottom:14px"><span class="badge badge-${w.status}">${statusLabel(w.status)}</span>${w.status === 'rejected' && w.alasan_penolakan ? `
+        <div class="rejection-notice" style="margin-top:10px">
+          <i class="fa-solid fa-circle-xmark rn-icon"></i>
+          <div><div class="rn-label">Catatan Admin     Alasan Penolakan</div>${h(w.alasan_penolakan)}</div>
+        </div>` : ''}</div>
+      <div class="pb-field"><div class="pb-label">Nama Kepala Keluarga</div><div class="pb-value">${h(w.nama_kk)}</div></div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">NIK Kepala Keluarga</div><div class="pb-value">${h(w.nik || '-')}</div></div>
+        <div class="pb-field"><div class="pb-label">Jumlah Anggota</div><div class="pb-value">${w.jumlah_anggota} jiwa</div></div>
+      </div>
+      <div class="pb-field"><div class="pb-label">Alamat Lengkap</div><div class="pb-value">${h(w.alamat || '-')}</div></div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">Kecamatan</div><div class="pb-value">${h(w.kecamatan || '-')}</div></div>
+        <div class="pb-field"><div class="pb-label">Status Pelayanan</div><div class="pb-value" style="color:${w.ibadah_id ? 'var(--green)' : 'var(--red)'}"><i class="${w.ibadah_id ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}" style="margin-right:6px"></i>${w.ibadah_id ? (h(w.ibadah_nama) || 'Terlayani') : 'Belum terlayani'}</div></div>
+      </div>
+      <div class="pb-field"><div class="pb-label">Bantuan Rumah Ibadah</div><div class="pb-value" style="font-weight:600;color:${w.bantuan_diterima && w.bantuan_diterima !== 'tidak_ada' ? 'var(--green)' : 'var(--text3)'}">${({sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima Bantuan'}[w.bantuan_diterima] || 'Belum Menerima Bantuan')}</div></div>
+      <div class="pb-field"><div class="pb-label">Keterangan</div><div class="pb-value">${h(w.keterangan || '-')}</div></div>
+      <div class="pb-field-grid">
+        <div class="pb-field"><div class="pb-label">Surveyor</div><div class="pb-value">${h(w.surveyor_nama || '-')}</div></div>
+        <div class="pb-field"><div class="pb-label">Tanggal Input</div><div class="pb-value">${formatDate(w.created_at)}</div></div>
+      </div>
+      <div class="pb-field"><div class="pb-label">Koordinat</div><div class="pb-value"><i class="fa-solid fa-location-dot" style="color:var(--green);margin-right:6px"></i>${(+w.lat).toFixed(6)}, ${(+w.lng).toFixed(6)}</div></div>
+    `;
+      }
+      modal.classList.add('show');
+      setTimeout(() => initModalPreviewMap(type, data), 100);
+    }
+    function closePreviewModal() {
+      document.getElementById('preview-modal').classList.remove('show');
+      if (mapInstances['map-preview-modal']) {
+        mapInstances['map-preview-modal'].remove();
+        delete mapInstances['map-preview-modal'];
+      }
+    }
+
+    // --  HELPERS                                                                                              
+    function canEdit(type, data) {
+      if (currentUser.role === 'admin') return true;
+      if (currentUser.role === 'surveyor' && data.surveyor_id == currentUser.id && data.status === 'pending') return true;
+      return false;
+    }
+    function statusLabel(s) {
+      if (s === 'pending') return 'Pending';
+      if (s === 'verified') return 'Verified';
+      if (s === 'rejected') return 'Ditolak';
+      return s;
+    }
+    function h(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function formatDate(d) { if (!d) return ''; const dt = new Date(d); return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
+    function showLoading(v) { const el = document.getElementById('loading'); el.classList.toggle('show', v); }
+    // --  Geocode Cache          
+    const _geocodeCache = {};
+    let _geocodeTimer = null;
+
+    async function reverseGeocode(lat, lng, cb) {
+      const key = lat.toFixed(4) + ',' + lng.toFixed(4);
+      if (_geocodeCache[key]) { cb(_geocodeCache[key]); return; }
+
+      clearTimeout(_geocodeTimer);
+      _geocodeTimer = setTimeout(async () => {
+        try {
+          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=id`);
+          const d = await r.json();
+          _geocodeCache[key] = d;
+          cb(d);
+        }
+        catch { cb(null); }
+      }, 300);
+    }
+    let toastTimer;
+    function showToast(msg, type = 'info') {
+      clearTimeout(toastTimer);
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = 'show ' + type;
+      toastTimer = setTimeout(() => el.className = '', 3500);
+    }
+    function openPopupForNearest(e, m) { }
+
+    // --  LIGHTBOX                                                                                           
+    function openLightbox(src) {
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightbox-img');
+      img.src = src;
+      lb.classList.add('show');
+      document.addEventListener('keydown', _lbEsc);
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('show');
+      document.getElementById('lightbox-img').src = '';
+      document.removeEventListener('keydown', _lbEsc);
+    }
+    function _lbEsc(e) { if (e.key === 'Escape') closeLightbox(); }
+
+    // -- SIDEBAR COLLAPSE
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('collapsed');
+      
+      // Invalidate sizes of all active Leaflet map instances
+      setTimeout(() => {
+        if (persistentMap) persistentMap.invalidateSize();
+        Object.values(mapInstances).forEach(m => {
+          if (m && typeof m.invalidateSize === 'function') {
+            m.invalidateSize();
+          }
+        });
+      }, 250);
+    }
+
+    // --  BOOT                                                                                                    
+    checkSession();
+  </script>
+</body>
+
+</html>
