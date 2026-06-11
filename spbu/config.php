@@ -2,11 +2,10 @@
 // ============================================
 // config.php — Konfigurasi Database SPBU
 // ============================================
-
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');       // Ganti jika perlu
-define('DB_PASS', '');           // Ganti jika perlu
-define('DB_NAME', 'webgis_spbu');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'webgis_spbu');
 
 function getConnection() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
