@@ -1,10 +1,10 @@
 <?php
 // ── Konfigurasi Database ──────────────────────
 // Sesuaikan dengan pengaturan XAMPP Anda
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');        // default XAMPP
-define('DB_PASS', '');            // default XAMPP (kosong)
-define('DB_NAME', 'webgis_poverty_mapping');
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: 'webgis_poverty_mapping');
 define('DB_CHARSET', 'utf8mb4');
 
 // ── Upload Config ─────────────────────────────
