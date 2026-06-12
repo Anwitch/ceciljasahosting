@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.6">
 </head>
 
 <body>
@@ -433,6 +433,9 @@
 
       await fetch(API.auth + '?action=logout', { method: 'POST', credentials: 'include' });
       currentUser = null;
+      if (location.hash) {
+        history.replaceState(null, null, ' ');
+      }
       document.getElementById('login-screen').classList.remove('hidden');
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-user').value = '';
@@ -473,9 +476,12 @@
       buildNav();
       window.scrollTo(0, 0);
 
-      // Load data dulu, baru render dashboard sekali (mencegah double render)
+      // Load data dulu
       await loadAll();
-      switchPage('dashboard');
+      const hashPage = location.hash.replace('#', '');
+      const validPages = getNavItems(currentUser.role).map(item => item.id);
+      const targetPage = validPages.includes(hashPage) ? hashPage : 'dashboard';
+      switchPage(targetPage);
     }
 
     // --  NAV                                                                                                             
@@ -543,7 +549,22 @@
       else cancelAddMode();
       renderPage(page);
       window.scrollTo(0, 0);
+
+      // Update URL hash
+      if (location.hash !== '#' + page) {
+        location.hash = page;
+      }
     }
+
+    // Global listener for SPA back/forward browser buttons
+    window.addEventListener('hashchange', () => {
+      if (!currentUser) return;
+      const hashPage = location.hash.replace('#', '');
+      const validPages = getNavItems(currentUser.role).map(item => item.id);
+      if (validPages.includes(hashPage) && currentPage !== hashPage) {
+        switchPage(hashPage);
+      }
+    });
 
     // -- RENDER PAGES ---------------------------
     function renderPage(page) {
@@ -1409,6 +1430,8 @@
     // --  VERIFY (Table layout) ------------------
     let _verifyData = { ibadah: [], warga: [] };
     let _verifyTab = 'ibadah'; // active tab: 'ibadah' | 'warga'
+    let _verifyPage = 1;
+    let _verifyPerPage = 10;
 
     async function renderVerify(area) {
       area.innerHTML = '<div class="empty-state"><div class="spin"></div><p style="margin-top:12px">Memuat data pending...</p></div>';
@@ -1422,6 +1445,9 @@
         // Set default tab ke yang ada datanya
         if (!_verifyData.ibadah.length && _verifyData.warga.length) _verifyTab = 'warga';
         else _verifyTab = 'ibadah';
+        
+        _verifyPage = 1;
+
         if (!_verifyData.ibadah.length && !_verifyData.warga.length) {
           area.innerHTML = '<div class="empty-state"><div class="e-icon"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i></div><p>Semua data sudah diverifikasi!<br>Tidak ada data pending.</p></div>';
           return;
@@ -1439,7 +1465,8 @@
             </select>
             <span class="verify-count-badge" id="vt-count"></span>
           </div>
-          <div id="vt-table-section"></div>`;
+          <div id="vt-table-section"></div>
+          <div class="daftar-pagination" id="vt-pagination"></div>`;
         renderVerifyTabs();
         renderVerifyTables();
       } catch (e) { area.innerHTML = '<div class="empty-state"><p>Gagal memuat data. Coba refresh.</p></div>'; }
@@ -1447,6 +1474,7 @@
 
     function switchVerifyTab(tab) {
       _verifyTab = tab;
+      _verifyPage = 1;
       renderVerifyTabs();
       renderVerifyTables();
     }
@@ -1475,21 +1503,43 @@
         : new Date(a.created_at) - new Date(b.created_at);
 
       const sec = document.getElementById('vt-table-section');
+      const pgEl = document.getElementById('vt-pagination');
       if (!sec) return;
 
-      if (_verifyTab === 'ibadah') {
+      let filtered = [];
+      const isIb = (_verifyTab === 'ibadah');
+
+      if (isIb) {
         const matchIb = ib => !q || [ib.nama, ib.surveyor_nama, ib.kecamatan, ib.pic, ib.alamat, ib.jenis]
           .some(v => (v || '').toLowerCase().includes(q));
-        const pi = [..._verifyData.ibadah].filter(matchIb).sort(sorter);
-        const countEl = document.getElementById('vt-count');
-        if (countEl) countEl.textContent = pi.length + ' pending';
+        filtered = [..._verifyData.ibadah].filter(matchIb).sort(sorter);
+      } else {
+        const matchW = w => !q || [w.nama_kk, w.surveyor_nama, w.kecamatan, w.nik, w.keterangan, w.alamat]
+          .some(v => (v || '').toLowerCase().includes(q));
+        filtered = [..._verifyData.warga].filter(matchW).sort(sorter);
+      }
 
-        if (!pi.length) {
-          sec.innerHTML = '<div class="empty-state" style="padding:40px 0"><p>Tidak ada data yang cocok dengan pencarian.</p></div>';
-          return;
-        }
+      const countEl = document.getElementById('vt-count');
+      if (countEl) countEl.textContent = filtered.length + ' pending';
+
+      if (!filtered.length) {
+        sec.innerHTML = '<div class="empty-state" style="padding:40px 0"><p>Tidak ada data yang cocok dengan pencarian.</p></div>';
+        if (pgEl) pgEl.innerHTML = '';
+        return;
+      }
+
+      // Pagination calculation
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / _verifyPerPage));
+      if (_verifyPage > totalPages) _verifyPage = totalPages;
+      if (_verifyPage < 1) _verifyPage = 1;
+
+      const start = (_verifyPage - 1) * _verifyPerPage;
+      const pageData = filtered.slice(start, start + _verifyPerPage);
+
+      if (isIb) {
         sec.innerHTML = `
-          <div class="verify-table-wrap">
+          <div class="verify-table-wrap verify-ibadah-table">
             <table>
               <thead><tr>
                 <th style="width:52px">Foto</th>
@@ -1503,7 +1553,7 @@
                 <th style="text-align:right">Aksi</th>
               </tr></thead>
               <tbody>
-                ${pi.map(ib => `
+                ${pageData.map(ib => `
                 <tr>
                   <td>
                     ${ib.foto_path
@@ -1512,7 +1562,7 @@
                   </td>
                   <td>
                     <div class="vt-name"><i class="${ICONS[ib.jenis]}" style="margin-right:5px;color:var(--amber)"></i>${h(ib.nama)}</div>
-                    ${ib.alamat ? `<div class="vt-sub">${h(ib.alamat.substring(0, 45))}${ib.alamat.length > 45 ? '   ' : ''}</div>` : ''}
+                    ${ib.alamat ? `<div class="vt-sub">${h(ib.alamat.substring(0, 45))}${ib.alamat.length > 45 ? '...' : ''}</div>` : ''}
                   </td>
                   <td><span class="vt-tag amber"><i class="${ICONS[ib.jenis]}"></i> ${h(ib.jenis)}</span></td>
                   <td><div class="vt-sub">${ib.kecamatan ? 'Kec. ' + h(ib.kecamatan) : '   '}</div></td>
@@ -1534,21 +1584,9 @@
               </tbody>
             </table>
           </div>`;
-
       } else {
-        // Tab Warga Miskin
-        const matchW = w => !q || [w.nama_kk, w.surveyor_nama, w.kecamatan, w.nik, w.keterangan, w.alamat]
-          .some(v => (v || '').toLowerCase().includes(q));
-        const pw = [..._verifyData.warga].filter(matchW).sort(sorter);
-        const countEl = document.getElementById('vt-count');
-        if (countEl) countEl.textContent = pw.length + ' pending';
-
-        if (!pw.length) {
-          sec.innerHTML = '<div class="empty-state" style="padding:40px 0"><p>Tidak ada data yang cocok dengan pencarian.</p></div>';
-          return;
-        }
         sec.innerHTML = `
-          <div class="verify-table-wrap">
+          <div class="verify-table-wrap verify-warga-table">
             <table>
               <thead><tr>
                 <th style="width:52px">Foto</th>
@@ -1562,7 +1600,7 @@
                 <th style="text-align:right">Aksi</th>
               </tr></thead>
               <tbody>
-                ${pw.map(w => `
+                ${pageData.map(w => `
                 <tr>
                   <td>
                     ${w.foto_path
@@ -1571,8 +1609,8 @@
                   </td>
                   <td>
                     <div class="vt-name"><i class="fa-solid fa-user" style="margin-right:5px;color:var(--blue)"></i>${h(w.nama_kk)}</div>
-                    ${w.alamat ? `<div class="vt-sub">${h(w.alamat.substring(0, 45))}${w.alamat.length > 45 ? '   ' : ''}</div>` : ''}
-                    ${w.keterangan ? `<div class="vt-sub" style="color:var(--text3);font-style:italic">${h(w.keterangan.substring(0, 40))}${w.keterangan.length > 40 ? '   ' : ''}</div>` : ''}
+                    ${w.alamat ? `<div class="vt-sub">${h(w.alamat.substring(0, 45))}${w.alamat.length > 45 ? '...' : ''}</div>` : ''}
+                    ${w.keterangan ? `<div class="vt-sub" style="color:var(--text3);font-style:italic">${h(w.keterangan.substring(0, 40))}${w.keterangan.length > 40 ? '...' : ''}</div>` : ''}
                   </td>
                   <td>
                     <div class="vt-col-nik">${h(w.nik || '   ')}</div>
@@ -1601,6 +1639,38 @@
             </table>
           </div>`;
       }
+
+      // Render Pagination Buttons
+      if (pgEl) {
+        if (totalPages <= 1) { pgEl.innerHTML = ''; return; }
+        let pgHtml = `<button ${_verifyPage <= 1 ? 'disabled' : ''} onclick="verifyGoPage(${_verifyPage - 1})"><i class="fa-solid fa-chevron-left" style="font-size:10px"></i></button>`;
+
+        let pages = [];
+        if (totalPages <= 7) {
+          for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+          pages.push(1);
+          if (_verifyPage > 3) pages.push('...');
+          for (let i = Math.max(2, _verifyPage - 1); i <= Math.min(totalPages - 1, _verifyPage + 1); i++) pages.push(i);
+          if (_verifyPage < totalPages - 2) pages.push('...');
+          pages.push(totalPages);
+        }
+
+        pages.forEach(p => {
+          if (p === '...') { pgHtml += `<span class="pg-info">...</span>`; }
+          else { pgHtml += `<button class="${p === _verifyPage ? 'active' : ''}" onclick="verifyGoPage(${p})">${p}</button>`; }
+        });
+
+        pgHtml += `<button ${_verifyPage >= totalPages ? 'disabled' : ''} onclick="verifyGoPage(${_verifyPage + 1})"><i class="fa-solid fa-chevron-right" style="font-size:10px"></i></button>`;
+        pgEl.innerHTML = pgHtml;
+      }
+    }
+
+    function verifyGoPage(p) {
+      _verifyPage = p;
+      renderVerifyTables();
+      const sec = document.getElementById('vt-tabs');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function openDetailModal(type, id) {
