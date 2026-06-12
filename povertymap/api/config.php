@@ -90,14 +90,18 @@ function jwt_decode(string $jwt, string $secret): ?array {
 
 function getAuthorizationHeader(): string {
     $headers = null;
-    if (isset($_SERVER['Authorization'])) {
+    if (isset($_SERVER['HTTP_X_AUTHORIZATION'])) {
+        $headers = trim($_SERVER["HTTP_X_AUTHORIZATION"]);
+    } else if (isset($_SERVER['Authorization'])) {
         $headers = trim($_SERVER["Authorization"]);
     } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
     } else if (function_exists('apache_request_headers')) {
         $requestHeaders = apache_request_headers();
         $requestHeaders = array_change_key_case($requestHeaders, CASE_LOWER);
-        if (isset($requestHeaders['authorization'])) {
+        if (isset($requestHeaders['x-authorization'])) {
+            $headers = trim($requestHeaders['x-authorization']);
+        } else if (isset($requestHeaders['authorization'])) {
             $headers = trim($requestHeaders['authorization']);
         }
     }
@@ -117,7 +121,7 @@ function getCurrentUser(): ?array {
             return $payload;
         }
     }
-    return $_SESSION['user'] ?? null;
+    return null;
 }
 
 /**

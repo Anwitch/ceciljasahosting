@@ -264,11 +264,23 @@
       const originalFetch = window.fetch;
       window.fetch = function(url, options) {
         options = options || {};
-        options.headers = options.headers || {};
         const token = sessionStorage.getItem('user_token');
         if (token) {
-          if (!options.headers['Authorization'] && !options.headers['authorization']) {
-            options.headers['Authorization'] = 'Bearer ' + token;
+          if (options.headers instanceof Headers) {
+            if (!options.headers.has('Authorization')) {
+              options.headers.set('Authorization', 'Bearer ' + token);
+            }
+            if (!options.headers.has('X-Authorization')) {
+              options.headers.set('X-Authorization', 'Bearer ' + token);
+            }
+          } else {
+            options.headers = options.headers || {};
+            if (!options.headers['Authorization'] && !options.headers['authorization']) {
+              options.headers['Authorization'] = 'Bearer ' + token;
+            }
+            if (!options.headers['X-Authorization'] && !options.headers['x-authorization']) {
+              options.headers['X-Authorization'] = 'Bearer ' + token;
+            }
           }
         }
         return originalFetch(url, options);
