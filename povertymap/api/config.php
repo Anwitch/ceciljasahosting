@@ -10,6 +10,7 @@ define('DB_CHARSET', 'utf8mb4');
 // ── Upload Config ─────────────────────────────
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5MB
+define('JWT_SECRET', 'a_very_secure_random_key_for_webgis_poverty_mapping_2026');
 
 // ── Session ───────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
@@ -53,10 +54,69 @@ function jsonResponse(array $data, int $code = 200): void {
 // ── Auth Helpers ──────────────────────────────
 
 /**
+ * JWT Helper functions for tab-session isolation
+ */
+function jwt_encode(array $payload, string $secret): string {
+    $header = json_encode(['alg' => 'HS256', 'typ' => 'JWT']);
+    $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
+    
+    $payloadJson = json_encode($payload);
+    $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payloadJson));
+    
+    $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $secret, true);
+    $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+    
+    return $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
+}
+
+function jwt_decode(string $jwt, string $secret): ?array {
+    $tokenParts = explode('.', $jwt);
+    if (count($tokenParts) !== 3) return null;
+    
+    $header = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[0]));
+    $payload = base64_decode(str_replace(['-', '_'], ['+', '/'], $tokenParts[1]));
+    $signatureProvided = $tokenParts[2];
+    
+    // Check signature
+    $base64UrlHeader = $tokenParts[0];
+    $base64UrlPayload = $tokenParts[1];
+    $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $secret, true);
+    $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
+    
+    if ($base64UrlSignature !== $signatureProvided) return null;
+    
+    return json_decode($payload, true);
+}
+
+function getAuthorizationHeader(): string {
+    $headers = null;
+    if (isset($_SERVER['Authorization'])) {
+        $headers = trim($_SERVER["Authorization"]);
+    } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+    } else if (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        $requestHeaders = array_change_key_case($requestHeaders, CASE_LOWER);
+        if (isset($requestHeaders['authorization'])) {
+            $headers = trim($requestHeaders['authorization']);
+        }
+    }
+    return $headers ?? '';
+}
+
+/**
  * Cek apakah user sudah login.
  * Return data user atau null.
  */
 function getCurrentUser(): ?array {
+    $authHeader = getAuthorizationHeader();
+    if (preg_match('/Bearer\s(\S+)/i', $authHeader, $matches)) {
+        $token = $matches[1];
+        $payload = jwt_decode($token, JWT_SECRET);
+        if ($payload) {
+            return $payload;
+        }
+    }
     return $_SESSION['user'] ?? null;
 }
 

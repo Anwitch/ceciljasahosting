@@ -41,8 +41,12 @@ if ($action === 'login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     auditLog($db, (int)$user['id'], 'LOGIN', 'users', (int)$user['id']);
 
+    // Generate JWT token for tab-session isolation
+    $token = jwt_encode($_SESSION['user'], JWT_SECRET);
+
     jsonResponse([
         'success' => true,
+        'token'   => $token,
         'user'    => $_SESSION['user']
     ]);
 }

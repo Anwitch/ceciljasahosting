@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.6">
+  <link rel="stylesheet" href="style.css?v=1.7">
 </head>
 
 <body>
@@ -259,6 +259,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
   <script>
+    // Global fetch interceptor to append JWT token for tab-session isolation
+    (function() {
+      const originalFetch = window.fetch;
+      window.fetch = function(url, options) {
+        options = options || {};
+        options.headers = options.headers || {};
+        const token = sessionStorage.getItem('user_token');
+        if (token) {
+          if (!options.headers['Authorization'] && !options.headers['authorization']) {
+            options.headers['Authorization'] = 'Bearer ' + token;
+          }
+        }
+        return originalFetch(url, options);
+      };
+    })();
+
     // -- 
     //  WebGIS Poverty Mapping     Main App
     // -- 
@@ -417,6 +433,9 @@
           await fetch(API.auth + '?action=logout', { method: 'POST', credentials: 'include' });
           return;
         }
+        if (res.token) {
+          sessionStorage.setItem('user_token', res.token);
+        }
         currentUser = res.user;
         await showApp();
       } catch (e) {
@@ -433,6 +452,7 @@
 
       await fetch(API.auth + '?action=logout', { method: 'POST', credentials: 'include' });
       currentUser = null;
+      sessionStorage.removeItem('user_token');
       if (location.hash) {
         history.replaceState(null, null, ' ');
       }
