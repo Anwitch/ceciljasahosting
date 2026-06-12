@@ -222,6 +222,48 @@
     </div>
   </div>
 
+  <!-- EDIT USER MODAL -->
+  <div id="edit-user-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3><i class="fa-solid fa-user-gear" style="color:var(--blue);margin-right:8px"></i>Edit User</h3>
+      <p style="margin-bottom:12px;font-size:12px;color:var(--text3)">Ubah data atau reset password pengguna.</p>
+      
+      <input type="hidden" id="eu-id">
+      
+      <div class="form-group" style="margin-bottom:12px;text-align:left">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Username (Tidak dapat diubah)</label>
+        <input type="text" id="eu-username" disabled style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--border2);color:var(--text2)">
+      </div>
+      
+      <div class="form-group" style="margin-bottom:12px;text-align:left">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Nama Lengkap</label>
+        <input type="text" id="eu-nama" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+      </div>
+      
+      <div class="form-group" style="margin-bottom:12px;text-align:left">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Role</label>
+        <select id="eu-role" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <option value="surveyor">Surveyor</option>
+          <option value="pemangku">Pemangku Keputusan</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      
+      <div class="form-group" style="margin-bottom:16px;text-align:left">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Password Baru (Kosongkan jika tidak diubah)</label>
+        <div style="position:relative">
+          <input type="password" id="eu-pass" placeholder="min 6 karakter" style="width:100%;padding:8px 36px 8px 8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <button type="button" onclick="togglePassword('eu-pass', this)" tabindex="-1" title="Tampilkan/sembunyikan password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;display:flex;align-items:center"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </div>
+      
+      <div class="modal-btns">
+        <button style="background:var(--bg);color:var(--text2)" onclick="closeEditUserModal()">Batal</button>
+        <button style="background:var(--blue-light);color:var(--blue);font-weight:600" onclick="confirmEditUser()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PREVIEW MODAL -->
   <div id="preview-modal" onclick="if(event.target===this)closePreviewModal()">
     <div class="preview-box">
@@ -2168,6 +2210,7 @@
       try {
         const res = await fetch(API.auth + '?action=users', { credentials: 'include' }).then(r => r.json());
         const users = res.data || [];
+        window._cachedUsersList = users;
         const roleColors = { admin: '#f59e0b', surveyor: '#10b981', pemangku: '#3b82f6' };
         area.innerHTML = `
       <div class="content-grid">
@@ -2201,11 +2244,12 @@
                       <div class="uc-name">${h(u.nama_lengkap)} <span style="color:var(--text3);font-weight:400">@${h(u.username)}</span></div>
                       <div class="uc-role"><span class="badge badge-${u.role === 'admin' ? 'pending' : (u.role === 'surveyor' ? 'verified' : 'in')}">${ROLE_LABELS[u.role] || u.role}</span> ${!u.is_active ? '<span style="color:var(--red);font-size:10px">(Nonaktif)</span>' : ''}</div>
                     </div>
-                    <div class="uc-actions">
+                    <div class="uc-actions" style="display:flex;align-items:center;gap:4px">
+                      <button class="uc-btn" style="background:var(--blue-light);color:var(--blue)" onclick="openEditUserModal(${u.id})" title="Edit User"><i class="fa-solid fa-pen-to-square"></i></button>
                       ${u.id != currentUser.id ? (u.is_active
-            ? `<button class="uc-btn" style="background:var(--red-light);color:var(--red)" onclick="toggleUserActive(${u.id},false)"><i class="fa-solid fa-ban"></i></button>`
-            : `<button class="uc-btn" style="background:var(--green-light);color:var(--green)" onclick="toggleUserActive(${u.id},true)"><i class="fa-solid fa-check"></i></button>`)
-            : '<span style="font-size:10px;color:var(--text3)">Anda</span>'}
+            ? `<button class="uc-btn" style="background:var(--red-light);color:var(--red)" onclick="toggleUserActive(${u.id},false)" title="Nonaktifkan User"><i class="fa-solid fa-ban"></i></button>`
+            : `<button class="uc-btn" style="background:var(--green-light);color:var(--green)" onclick="toggleUserActive(${u.id},true)" title="Aktifkan User"><i class="fa-solid fa-check"></i></button>`)
+            : ''}
                     </div>
                   </div>`).join('')}
               </div>
@@ -2246,6 +2290,50 @@
       await fetch(API.auth + `?action=update&id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ is_active: active }) }).then(r => r.json());
       showToast(active ? 'User diaktifkan' : 'User dinonaktifkan', 'info');
       renderUsers(document.getElementById('page-content'));
+    }
+
+    function openEditUserModal(id) {
+      const u = window._cachedUsersList?.find(x => x.id == id);
+      if (!u) return;
+      document.getElementById('eu-id').value = u.id;
+      document.getElementById('eu-username').value = u.username;
+      document.getElementById('eu-nama').value = u.nama_lengkap;
+      document.getElementById('eu-role').value = u.role;
+      document.getElementById('eu-pass').value = '';
+      document.getElementById('edit-user-modal').classList.add('show');
+    }
+
+    function closeEditUserModal() {
+      document.getElementById('edit-user-modal').classList.remove('show');
+    }
+
+    async function confirmEditUser() {
+      const id = document.getElementById('eu-id').value;
+      const nama_lengkap = document.getElementById('eu-nama').value.trim();
+      const role = document.getElementById('eu-role').value;
+      const password = document.getElementById('eu-pass').value;
+
+      if (!nama_lengkap) { showToast('Nama lengkap wajib diisi', 'error'); return; }
+      if (password && password.length < 6) { showToast('Password baru min 6 karakter', 'error'); return; }
+
+      const payload = { nama_lengkap, role };
+      if (password) {
+        payload.password = password;
+      }
+
+      try {
+        const res = await fetch(API.auth + `?action=update&id=${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        }).then(r => r.json());
+
+        if (!res.success) throw new Error(res.error);
+        showToast('Data user berhasil diperbarui!', 'success');
+        closeEditUserModal();
+        renderUsers(document.getElementById('page-content'));
+      } catch (e) { showToast('Error: ' + e.message, 'error'); }
     }
 
 
