@@ -142,12 +142,12 @@ if ($method === 'PUT') {
     $oldData = $old->fetch();
     if (!$oldData) jsonResponse(['success'=>false,'error'=>'Tidak ditemukan'], 404);
 
-    // Surveyor hanya bisa edit milik sendiri yang masih pending
+    // Surveyor hanya bisa edit milik sendiri yang masih pending atau rejected
     if ($user['role'] === 'surveyor') {
         if ((int)$oldData['surveyor_id'] !== $user['id']) {
             jsonResponse(['success'=>false,'error'=>'Anda hanya bisa edit data milik Anda'], 403);
         }
-        if ($oldData['status'] !== 'pending') {
+        if ($oldData['status'] !== 'pending' && $oldData['status'] !== 'rejected') {
             jsonResponse(['success'=>false,'error'=>'Data yang sudah diverifikasi tidak bisa diedit'], 403);
         }
     }
@@ -184,6 +184,14 @@ if ($method === 'PUT') {
             }
         }
     }
+
+    if ($user['role'] === 'surveyor') {
+        $fields[] = "status = ?";
+        $vals[] = 'pending';
+        $fields[] = "alasan_penolakan = ?";
+        $vals[] = null;
+    }
+
     if (empty($fields)) jsonResponse(['success'=>false,'error'=>'Tidak ada data diubah'], 422);
 
     // jika koordinat berubah dan data verified, cari ulang ibadah terdekat

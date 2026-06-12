@@ -3135,6 +3135,16 @@
       if (!data) return;
       const editable = canEdit(type, data);
       footer.style.display = editable ? 'flex' : 'none';
+      
+      const saveBtn = document.getElementById('ep-save');
+      if (saveBtn) {
+        if (data.status === 'rejected') {
+          saveBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Ajukan Ulang';
+        } else {
+          saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+        }
+      }
+
       document.getElementById('ep-title').innerHTML = type === 'ibadah' ? `<i class="${ICONS[data.jenis]}"></i> Edit Ibadah` : '<i class="fa-solid fa-user"></i> Edit Warga';
       if (type === 'ibadah') {
         const ib = data;
@@ -3200,12 +3210,19 @@
     async function saveEdit() {
       const { type, id } = editState;
       if (!type || !id) return;
+      const data = type === 'ibadah'
+        ? (ibadahLayer[id]?.data || cachedIbadah.find(x => x.id == id))
+        : (wargaLayer[id]?.data || cachedWarga.find(x => x.id == id));
+      const isRejected = data?.status === 'rejected';
       const btn = document.getElementById('ep-save');
-      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+      btn.disabled = true;
+      btn.innerHTML = isRejected
+        ? '<i class="fa-solid fa-spinner fa-spin"></i> Mengajukan...'
+        : '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
       try {
         let res;
         if (type === 'ibadah') {
-          const ib = ibadahLayer[id]?.data || cachedIbadah.find(x => x.id == id);
+          const ib = data;
           res = await fetch(API.ibadah + '?id=' + id, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
             body: JSON.stringify({
@@ -3221,7 +3238,7 @@
             })
           }).then(r => r.json());
         } else {
-          const w = wargaLayer[id]?.data || cachedWarga.find(x => x.id == id);
+          const w = data;
           res = await fetch(API.warga + '?id=' + id, {
             method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
             body: JSON.stringify({
@@ -3239,14 +3256,20 @@
         }
         if (res && !res.success) {
           showToast('Gagal menyimpan: ' + (res.error || 'Terjadi kesalahan'), 'error');
-          btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+          btn.disabled = false;
+          btn.innerHTML = isRejected
+            ? '<i class="fa-solid fa-paper-plane"></i> Ajukan Ulang'
+            : '<i class="fa-solid fa-floppy-disk"></i> Simpan';
           return;
         }
-        showToast('Perubahan disimpan!', 'success');
+        showToast(isRejected ? 'Data berhasil diajukan ulang!' : 'Perubahan disimpan!', 'success');
         closeEditPanel(); await loadAll();
         if (currentPage === 'daftar' || currentPage === 'dashboard') renderPage(currentPage);
       } catch (e) { showToast('Error: ' + e.message, 'error'); }
-      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan';
+      btn.disabled = false;
+      btn.innerHTML = isRejected
+        ? '<i class="fa-solid fa-paper-plane"></i> Ajukan Ulang'
+        : '<i class="fa-solid fa-floppy-disk"></i> Simpan';
     }
     async function deleteFromEdit() {
       const { type, id } = editState;
@@ -3637,7 +3660,7 @@
     // --  HELPERS                                                                                              
     function canEdit(type, data) {
       if (currentUser.role === 'admin') return true;
-      if (currentUser.role === 'surveyor' && data.surveyor_id == currentUser.id && data.status === 'pending') return true;
+      if (currentUser.role === 'surveyor' && data.surveyor_id == currentUser.id && (data.status === 'pending' || data.status === 'rejected')) return true;
       return false;
     }
     function statusLabel(s) {
