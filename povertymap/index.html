@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
     content="WebGIS Poverty Mapping     Sistem Informasi Geografis Pemetaan Kemiskinan Berbasis Rumah Ibadah">
-  <title>WebGIS Poverty Mapping     Dashboard</title>
+  <title>WebGIS Poverty Mapping Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
@@ -227,39 +227,50 @@
     <div class="modal-box">
       <h3><i class="fa-solid fa-user-gear" style="color:var(--blue);margin-right:8px"></i>Edit User</h3>
       <p style="margin-bottom:12px;font-size:12px;color:var(--text3)">Ubah data atau reset password pengguna.</p>
-      
+
       <input type="hidden" id="eu-id">
-      
+
       <div class="form-group" style="margin-bottom:12px;text-align:left">
-        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Username (Tidak dapat diubah)</label>
-        <input type="text" id="eu-username" disabled style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--border2);color:var(--text2)">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Username (Tidak
+          dapat diubah)</label>
+        <input type="text" id="eu-username" disabled
+          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--border2);color:var(--text2)">
       </div>
-      
+
       <div class="form-group" style="margin-bottom:12px;text-align:left">
-        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Nama Lengkap</label>
-        <input type="text" id="eu-nama" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Nama
+          Lengkap</label>
+        <input type="text" id="eu-nama"
+          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
       </div>
-      
+
       <div class="form-group" style="margin-bottom:12px;text-align:left">
         <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Role</label>
-        <select id="eu-role" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+        <select id="eu-role"
+          style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
           <option value="surveyor">Surveyor</option>
           <option value="pemangku">Pemangku Keputusan</option>
           <option value="admin">Admin</option>
         </select>
       </div>
-      
+
       <div class="form-group" style="margin-bottom:16px;text-align:left">
-        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Password Baru (Kosongkan jika tidak diubah)</label>
+        <label style="display:block;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--text2)">Password Baru
+          (Kosongkan jika tidak diubah)</label>
         <div style="position:relative">
-          <input type="password" id="eu-pass" placeholder="min 6 karakter" style="width:100%;padding:8px 36px 8px 8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
-          <button type="button" onclick="togglePassword('eu-pass', this)" tabindex="-1" title="Tampilkan/sembunyikan password" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;display:flex;align-items:center"><i class="fa-solid fa-eye"></i></button>
+          <input type="password" id="eu-pass" placeholder="min 6 karakter"
+            style="width:100%;padding:8px 36px 8px 8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <button type="button" onclick="togglePassword('eu-pass', this)" tabindex="-1"
+            title="Tampilkan/sembunyikan password"
+            style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:2px 4px;display:flex;align-items:center"><i
+              class="fa-solid fa-eye"></i></button>
         </div>
       </div>
-      
+
       <div class="modal-btns">
         <button style="background:var(--bg);color:var(--text2)" onclick="closeEditUserModal()">Batal</button>
-        <button style="background:var(--blue-light);color:var(--blue);font-weight:600" onclick="confirmEditUser()">Simpan</button>
+        <button style="background:var(--blue-light);color:var(--blue);font-weight:600"
+          onclick="confirmEditUser()">Simpan</button>
       </div>
     </div>
   </div>
@@ -302,9 +313,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
   <script>
     // Global fetch interceptor to append JWT token for tab-session isolation
-    (function() {
+    (function () {
       const originalFetch = window.fetch;
-      window.fetch = function(url, options) {
+      window.fetch = function (url, options) {
         options = options || {};
         const token = sessionStorage.getItem('user_token');
         if (token) {
@@ -711,6 +722,18 @@
         </div>`;
       }
 
+      let recentCardHtml = '';
+      if (role === 'admin' || role === 'surveyor') {
+        recentCardHtml = `
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <h3>Data Terbaru</h3>
+        <button onclick="switchPage('daftar')" style="font-size:11px;font-weight:600;color:var(--blue);border:none;background:none;cursor:pointer;">Lihat Semua</button>
+      </div>
+      <div class="card-body" id="dash-recent"></div>
+    </div>`;
+      }
+
       if ((role === 'admin' || role === 'pemangku') && dashTab === 'analisis') {
         renderDashboardAnalisis(area, tabsHtml, s, pct);
         return;
@@ -845,13 +868,7 @@
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-header">
-        <h3>${role === 'admin' ? 'Data Terbaru' : 'Rumah Ibadah Terdekat'}</h3>
-        <button onclick="switchPage('daftar')" style="font-size:11px;font-weight:600;color:var(--blue);border:none;background:none;cursor:pointer;">Lihat Semua    </button>
-      </div>
-      <div class="card-body" id="dash-recent"></div>
-    </div>
+    ${recentCardHtml}
   `;
       // Persistent map     tile & marker di-cache, tidak di-destroy saat navigasi
       setTimeout(() => {
@@ -866,17 +883,54 @@
     function renderDashRecent() {
       const el = document.getElementById('dash-recent');
       if (!el) return;
-      const items = cachedIbadah.slice(0, 5);
-      if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="e-icon"><i class="fa-solid fa-place-of-worship"></i></div><p>Belum ada data rumah ibadah</p></div>'; return; }
-      el.innerHTML = items.map(ib => `
-    <div class="list-item" onclick="flyToOnMap(${ib.lat},${ib.lng})">
-      <div class="list-icon" style="background:${COLORS[ib.jenis]}22;color:${COLORS[ib.jenis]}"><i class="${ICONS[ib.jenis]}"></i></div>
+      
+      const combined = [
+        ...cachedIbadah.map(item => ({ ...item, type: 'ibadah' })),
+        ...cachedWarga.map(item => ({ ...item, type: 'warga' }))
+      ];
+
+      combined.sort((a, b) => {
+        const timeA = a.created_at ? new Date(a.created_at.replace(/-/g, '/')).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at.replace(/-/g, '/')).getTime() : 0;
+        return timeB - timeA;
+      });
+
+      const items = combined.slice(0, 5);
+      if (!items.length) { el.innerHTML = '<div class="empty-state"><div class="e-icon"><i class="fa-solid fa-database"></i></div><p>Belum ada data terbaru</p></div>'; return; }
+      
+      el.innerHTML = items.map(item => {
+        let iconHtml = '';
+        let titleHtml = '';
+        let subHtml = '';
+
+        if (item.type === 'ibadah') {
+          iconHtml = `<div class="list-icon" style="background:${COLORS[item.jenis]}22;color:${COLORS[item.jenis]}"><i class="${ICONS[item.jenis]}"></i></div>`;
+          titleHtml = `<div class="list-name">${h(item.nama)} <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--border2);color:var(--text2);margin-left:6px">Rumah Ibadah</span></div>`;
+          subHtml = `<div class="list-sub">PIC: ${h(item.pic)} &nbsp;•&nbsp; Radius: ${item.radius}m &nbsp;•&nbsp; ${item.jumlah_kk || 0} KK</div>`;
+        } else {
+          const bantuanLabels = {
+            sembako: 'Sembako Bulanan',
+            beasiswa: 'Beasiswa Anak Asuh',
+            modal: 'Modal Pemberdayaan',
+            tunai: 'Santunan Tunai/Kesehatan',
+            tidak_ada: 'Belum Menerima Bantuan'
+          };
+          const bantuanTxt = bantuanLabels[item.bantuan_diterima] || 'Belum Menerima Bantuan';
+          iconHtml = `<div class="list-icon" style="background:#3b82f622;color:#3b82f6"><i class="fa-solid fa-people-group"></i></div>`;
+          titleHtml = `<div class="list-name">${h(item.nama_kk)} <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--border2);color:var(--text2);margin-left:6px">Warga Miskin</span></div>`;
+          subHtml = `<div class="list-sub">NIK: ${h(item.nik || '-')} &nbsp;•&nbsp; Anggota: ${item.jumlah_anggota} jiwa &nbsp;•&nbsp; Bantuan: ${bantuanTxt}</div>`;
+        }
+
+        return `
+    <div class="list-item" onclick="flyToOnMap(${item.lat},${item.lng})">
+      ${iconHtml}
       <div class="list-body">
-        <div class="list-name">${h(ib.nama)}</div>
-        <div class="list-sub">PIC: ${h(ib.pic)}    Radius: ${ib.radius}m    ${ib.jumlah_kk || 0} KK</div>
+        ${titleHtml}
+        ${subHtml}
       </div>
-      <div class="list-end"><span class="badge badge-${ib.status}">${statusLabel(ib.status)}</span></div>
-    </div>`).join('');
+      <div class="list-end"><span class="badge badge-${item.status}">${statusLabel(item.status)}</span></div>
+    </div>`;
+      }).join('');
     }
 
     // --  PETA PAGE -----------------------------
@@ -1519,7 +1573,7 @@
         // Set default tab ke yang ada datanya
         if (!_verifyData.ibadah.length && _verifyData.warga.length) _verifyTab = 'warga';
         else _verifyTab = 'ibadah';
-        
+
         _verifyPage = 1;
 
         if (!_verifyData.ibadah.length && !_verifyData.warga.length) {
@@ -2048,12 +2102,12 @@
         <div class="card-header"><h3>Perbandingan KK per Kecamatan</h3></div>
         <div class="card-body">
           ${kecRows.length === 0
-        ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data kecamatan</p>`
-        : kecRows.map(r => {
-          const pctBar = Math.round((r.kk / maxKK) * 100);
-          const pctLayan = r.kk > 0 ? Math.round((r.kkTerlayani / r.kk) * 100) : 0;
-          const belum = r.kk - r.kkTerlayani;
-          return `<div style="margin-bottom:14px">
+          ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data kecamatan</p>`
+          : kecRows.map(r => {
+            const pctBar = Math.round((r.kk / maxKK) * 100);
+            const pctLayan = r.kk > 0 ? Math.round((r.kkTerlayani / r.kk) * 100) : 0;
+            const belum = r.kk - r.kkTerlayani;
+            return `<div style="margin-bottom:14px">
                 <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
                   <span style="font-size:12px;font-weight:500;color:var(--text1)">${r.nama.replace('Pontianak ', 'Ptk. ')}</span>
                   <span style="font-size:11px;color:var(--text2)">${r.kkTerlayani} terlayani · <span style="color:${belum > 0 ? 'var(--red)' : 'var(--green)'}">${belum} belum</span></span>
@@ -2065,8 +2119,8 @@
                   </div>
                 </div>
               </div>`;
-        }).join('')
-      }
+          }).join('')
+        }
           <div style="display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)">
             <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:#10b981;border-radius:2px"></div>Terlayani</div>
             <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><div style="width:10px;height:10px;background:#f87171;border-radius:2px"></div>Belum terlayani</div>
@@ -2079,10 +2133,10 @@
         <div class="card-header"><h3>Distribusi Rumah Ibadah</h3><span style="font-size:11px;color:var(--text2)">${s.ibadah || 0} total terverifikasi</span></div>
         <div class="card-body">
           ${Object.entries(byJenis).length === 0
-        ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data</p>`
-        : Object.entries(byJenis).sort((a, b) => b[1] - a[1]).map(([jenis, count]) => {
-          const pctJ = s.ibadah > 0 ? Math.round((count / s.ibadah) * 100) : 0;
-          return `<div style="margin-bottom:13px">
+          ? `<p style="color:var(--text2);font-size:12px;text-align:center;padding:24px 0">Belum ada data</p>`
+          : Object.entries(byJenis).sort((a, b) => b[1] - a[1]).map(([jenis, count]) => {
+            const pctJ = s.ibadah > 0 ? Math.round((count / s.ibadah) * 100) : 0;
+            return `<div style="margin-bottom:13px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                   <span style="font-size:12px;font-weight:500;color:var(--text1)"><i class="${ICONS[jenis]}" style="margin-right:5px;color:${COLORS[jenis]}"></i>${jenis.charAt(0).toUpperCase() + jenis.slice(1)}</span>
                   <span style="font-size:11px;color:var(--text2)">${count} (${pctJ}%)</span>
@@ -2091,8 +2145,8 @@
                   <div style="height:100%;width:${pctJ}%;background:${COLORS[jenis]};border-radius:4px;transition:width .5s"></div>
                 </div>
               </div>`;
-        }).join('')
-      }
+          }).join('')
+        }
           <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2)">
             <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:500">Coverage keseluruhan</div>
             <div style="display:flex;align-items:center;gap:10px">
@@ -2354,7 +2408,7 @@
 
       const mapEl = document.getElementById('persistent-map');
       const center = [cachedIbadah.length ? +cachedIbadah[0].lat : -0.02,
-                      cachedIbadah.length ? +cachedIbadah[0].lng : 109.33];
+      cachedIbadah.length ? +cachedIbadah[0].lng : 109.33];
 
       const m = L.map(mapEl, {
         zoomControl: true,
@@ -2363,14 +2417,14 @@
       }).setView(center, 13);
 
       // Tile layers     dibuat SEKALI, di-cache oleh browser
-      const osm   = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+      const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
       const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
-      const dark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
+      const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 });
       light.addTo(m);
 
       const layerIbadah = L.layerGroup().addTo(m);
-      const layerWarga  = L.layerGroup().addTo(m);
-      const layerHeat   = L.layerGroup(); // Placeholder layer untuk overlay control
+      const layerWarga = L.layerGroup().addTo(m);
+      const layerHeat = L.layerGroup(); // Placeholder layer untuk overlay control
       m.layerGroups = { ibadah: layerIbadah, warga: layerWarga, heat: layerHeat };
       m._statusFilter = defaultStatusFilter();
 
@@ -2698,7 +2752,7 @@
 
     let persistentHeatLayer = null;
 
-    window.updatePersistentHeatmap = function() {
+    window.updatePersistentHeatmap = function () {
       const m = persistentMap;
       if (!m) return;
       if (persistentHeatLayer) {
@@ -2725,13 +2779,13 @@
       }).addTo(m);
     };
 
-    window.updatePersistentHeatRadius = function(val) {
+    window.updatePersistentHeatRadius = function (val) {
       if (persistentHeatLayer) {
         persistentHeatLayer.setOptions({ radius: parseInt(val) });
       }
     };
 
-    window.showHeatmapControls = function(m, show) {
+    window.showHeatmapControls = function (m, show) {
       const ctrlEl = document.querySelector('.heatmap-settings-control');
       if (ctrlEl) {
         ctrlEl.style.display = show ? 'block' : 'none';
@@ -2801,7 +2855,7 @@
         else clrDot = sc.rejected;
         const opacity = isRejected ? 0.45 : 1;
         const target = m.layerGroups ? m.layerGroups.warga : m;
-        
+
         // Fase 6: Gunakan L.circleMarker (Canvas) alih-alih L.marker (DOM)
         mk = L.circleMarker([data.lat, data.lng], {
           radius: 8,
@@ -2871,7 +2925,7 @@
       <div class="tooltip-row">
         <span>Bantuan Rumah Ibadah</span>
         <strong style="color:${data.bantuan_diterima && data.bantuan_diterima !== 'tidak_ada' ? 'var(--green)' : 'var(--text3)'}">
-          ${({sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima'}[data.bantuan_diterima] || 'Belum Menerima')}
+          ${({ sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima' }[data.bantuan_diterima] || 'Belum Menerima')}
         </strong>
       </div>
       ${isPemangku ? '' : `<div class="tooltip-row">
@@ -3235,7 +3289,7 @@
       if (!data) return;
       const editable = canEdit(type, data);
       footer.style.display = editable ? 'flex' : 'none';
-      
+
       const saveBtn = document.getElementById('ep-save');
       if (saveBtn) {
         if (data.status === 'rejected') {
@@ -3737,7 +3791,7 @@
         <div class="pb-field"><div class="pb-label">Kecamatan</div><div class="pb-value">${h(w.kecamatan || '-')}</div></div>
         <div class="pb-field"><div class="pb-label">Status Pelayanan</div><div class="pb-value" style="color:${w.ibadah_id ? 'var(--green)' : 'var(--red)'}"><i class="${w.ibadah_id ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation'}" style="margin-right:6px"></i>${w.ibadah_id ? (h(w.ibadah_nama) || 'Terlayani') : 'Belum terlayani'}</div></div>
       </div>
-      <div class="pb-field"><div class="pb-label">Bantuan Rumah Ibadah</div><div class="pb-value" style="font-weight:600;color:${w.bantuan_diterima && w.bantuan_diterima !== 'tidak_ada' ? 'var(--green)' : 'var(--text3)'}">${({sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima Bantuan'}[w.bantuan_diterima] || 'Belum Menerima Bantuan')}</div></div>
+      <div class="pb-field"><div class="pb-label">Bantuan Rumah Ibadah</div><div class="pb-value" style="font-weight:600;color:${w.bantuan_diterima && w.bantuan_diterima !== 'tidak_ada' ? 'var(--green)' : 'var(--text3)'}">${({ sembako: 'Sembako Bulanan', beasiswa: 'Beasiswa Anak Asuh', modal: 'Modal Pemberdayaan', tunai: 'Santunan Tunai/Kesehatan', tidak_ada: 'Belum Menerima Bantuan' }[w.bantuan_diterima] || 'Belum Menerima Bantuan')}</div></div>
       <div class="pb-field"><div class="pb-label">Keterangan</div><div class="pb-value">${h(w.keterangan || '-')}</div></div>
       <div class="pb-field-grid">
         <div class="pb-field"><div class="pb-label">Surveyor</div><div class="pb-value">${h(w.surveyor_nama || '-')}</div></div>
@@ -3819,7 +3873,7 @@
     function toggleSidebar() {
       const sb = document.getElementById('sidebar');
       sb.classList.toggle('collapsed');
-      
+
       // Invalidate sizes of all active Leaflet map instances
       setTimeout(() => {
         if (persistentMap) persistentMap.invalidateSize();
