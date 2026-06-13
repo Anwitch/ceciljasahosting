@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>WebGIS Choropleth Penduduk Pontianak - BPS 2023</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet JS & CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #60A5FA;
+            --primary-pale: #EFF6FF;
+            --bg: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #475569;
+            --text-muted: #94A3B8;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 20px 40px -15px rgba(37, 99, 235, 0.15), 0 1px 10px rgba(37, 99, 235, 0.05);
+            --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 24px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .header-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-pale);
+            border: 1px solid rgba(37, 99, 235, 0.12);
+            padding: 6px 14px;
+            border-radius: 30px;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .user-nim {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* MAIN DASHBOARD */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
+            flex: 1;
+            padding: 20px;
+            height: calc(100vh - 75px);
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr auto;
+                height: auto;
+                overflow: y-auto;
+            }
+        }
+
+        /* LEFT PANEL: MAP */
+        .map-wrapper {
+            position: relative;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* RIGHT PANEL: SIDEBAR */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: 20px;
+        }
+
+        /* CARDS */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            transition: var(--tr);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1.5px solid var(--border-light);
+            padding-bottom: 8px;
+        }
+
+        /* STATS CARD */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+
+        .stat-val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-full {
+            grid-column: span 2;
+        }
+
+        /* DETAIL CARD */
+        .detail-placeholder {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px 10px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .detail-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .detail-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .detail-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .detail-badge.sangat-padat { background: #FFD4D4; color: #800026; }
+        .detail-badge.padat { background: #FFE8D4; color: #E31A1C; }
+        .detail-badge.sedang { background: #FFF7D4; color: #D67E00; }
+        .detail-badge.rendah { background: #E4FCD4; color: #3E8E00; }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            border-bottom: 1px dashed var(--border-light);
+            padding-bottom: 6px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .detail-val {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--border-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        /* DISTRICT LIST CARD */
+        .district-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .district-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .district-list::-webkit-scrollbar-thumb {
+            background-color: var(--border-light);
+            border-radius: 10px;
+        }
+
+        .district-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: var(--tr);
+        }
+
+        .district-item:hover {
+            background: var(--primary-pale);
+            border-color: var(--primary-light);
+            transform: translateX(3px);
+        }
+
+        .district-item-active {
+            background: var(--primary-pale);
+            border-color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
+        }
+
+        .district-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .district-pop {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        /* LEGEND CARD */
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">🗺️</div>
+                <div class="brand-text">
+                    <span class="brand-title">Peta Koroplet Kepadatan Penduduk</span>
+                    <span class="brand-subtitle">Analisis Sebaran Penduduk Kota Pontianak — Badan Pusat Statistik 2023</span>
+                </div>
+            </div>
+            <div class="user-badge">
+                <div class="user-avatar">CY</div>
+                <div class="user-info">
+                    <span class="user-name">Cecilia Yvon Gunawan</span>
+                    <span class="user-nim">NIM D1041231056</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard-container">
+        
+        <!-- MAP AREA -->
+        <div class="map-wrapper">
+            <div id="map"></div>
+        </div>
+
+        <!-- SIDEBAR INFO -->
+        <div class="sidebar">
+            
+            <!-- CARD 1: STATS -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📊 Pontianak Dalam Angka</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-val" id="stat-total-pop">0</div>
+                        <div class="stat-label">Total Penduduk</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val">6</div>
+                        <div class="stat-label">Kecamatan</div>
+                    </div>
+                    <div class="stat-item stat-full">
+                        <div class="stat-val" id="stat-density">0</div>
+                        <div class="stat-label">Kepadatan Rata-rata (jiwa/km²)</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border-light); display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+                    <span style="color: var(--text-secondary); font-weight: 500;">Sumber Data:</span>
+                    <span style="font-weight: 700; background: var(--primary-pale); color: var(--primary); padding: 4px 8px; border-radius: 20px; border: 1px solid rgba(37,99,235,0.1);">Badan Pusat Statistik (BPS) 2023</span>
+                </div>
+            </div>
+
+            <!-- CARD 2: DYNAMIC DETAILS -->
+            <div class="card" id="detail-card">
+                <div class="card-title">
+                    <span>🔍 Detail Wilayah</span>
+                </div>
+                <div id="detail-content">
+                    <div class="detail-placeholder">
+                        Arahkan kursor ke wilayah peta atau klik daftar kecamatan untuk melihat detail analisis kependudukan.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: DISTRICT LIST -->
+            <div class="card">
+                <div class="card-title">
+                    <span>📍 Daftar Wilayah Kecamatan</span>
+                </div>
+                <div class="district-list" id="district-list-container">
+                    <!-- Dynamic injection -->
+                </div>
+            </div>
+
+            <!-- CARD 4: LEGEND -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🎨 Tingkat Kepadatan Penduduk</span>
+                </div>
+                <div class="legend-list" id="legend-container">
+                    <!-- Dynamic injection -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- GEODATA -->
+    <script type="text/javascript" src="kecamatanJS.js"></script>
+
+    <!-- LOGIC -->
+    <script type="text/javascript">
+
+        // Inisialisasi peta Pontianak
+        const map = L.map('map').setView([-0.02, 109.34], 12);
+
+        // OSM Tiles dengan style bersih
+        const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> | BPS 2023'
+        }).addTo(map);
+
+        // Layer geojson global
+        let geojson;
+        // Map untuk menampung referensi layer berdasarkan nama kecamatan
+        const districtLayers = {};
+
+        // Klasifikasi warna kepadatan (mengikuti 4 kelas versi pengguna)
+        function getColor(d) {
+            return d > 150000 ? '#800026' : // Sangat Padat
+                   d > 100000 ? '#E31A1C' : // Padat
+                   d > 50000  ? '#FEB24C' : // Sedang
+                                '#FFEDA0';  // Rendah
+        }
+
+        // Dapatkan string klasifikasi kepadatan
+        function getDensityCategory(d) {
+            return d > 150000 ? 'Sangat Padat' :
+                   d > 100000 ? 'Padat' :
+                   d > 50000  ? 'Sedang' :
+                                'Rendah';
+        }
+
+        // Style dasar untuk polygon kecamatan
+        function style(feature) {
+            return {
+                weight: 2,
+                opacity: 1,
+                color: '#FFFFFF',
+                dashArray: '3',
+                fillOpacity: 0.75,
+                fillColor: getColor(feature.properties.JmlPendduk)
+            };
+        }
+
+        // Format angka dengan separator ribuan
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Hitung total statistik Pontianak
+        function initStatistics() {
+            let totalPop = 0;
+            // Di dataset Plan_Area bernilai sama (113026328.1 m^2 atau 113.02 km^2) untuk setiap baris.
+            // Kota Pontianak memiliki luas total sekitar 113.02 km^2.
+            const totalAreaSqKm = 113.026; 
+
+            kecamatanData.features.forEach(f => {
+                totalPop += f.properties.JmlPendduk;
+            });
+
+            document.getElementById('stat-total-pop').innerText = formatNumber(totalPop) + " jiwa";
+            document.getElementById('stat-density').innerText = formatNumber(Math.round(totalPop / totalAreaSqKm));
+        }
+
+        // Update detail di sidebar kanan
+        function updateDetailPanel(props) {
+            const detailContainer = document.getElementById('detail-content');
+            
+            if (!props) {
+                detailContainer.innerHTML = `
+                    <div class="detail-placeholder">
+                        Arahkan kursor ke wilayah peta atau klik daftar kecamatan untuk melihat detail analisis kependudukan.
+                    </div>
+                `;
+                return;
+            }
+
+            const pop = props.JmlPendduk;
+            const areaSqKm = (props.Plan_Area / 1000000).toFixed(2); // Convert sq m to sq km
+            const density = Math.round(pop / areaSqKm);
+            const category = getDensityCategory(pop);
+            const badgeClass = category.toLowerCase().replace(" ", "-");
+            
+            // Hitung persen relatif terhadap populasi tertinggi (150.517 jiwa di Pontianak Barat)
+            const maxPopVal = 160000;
+            const percent = Math.min(100, Math.round((pop / maxPopVal) * 100));
+
+            detailContainer.innerHTML = `
+                <div class="detail-info">
+                    <div class="detail-header">
+                        <span class="detail-name">${props.name}</span>
+                        <span class="detail-badge ${badgeClass}">${category}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Jumlah Penduduk</span>
+                        <span class="detail-val">${formatNumber(pop)} jiwa</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Luas Wilayah</span>
+                        <span class="detail-val">${areaSqKm} km²</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Kepadatan Penduduk</span>
+                        <span class="detail-val">${formatNumber(density)} jiwa/km²</span>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 2px;">
+                            <span>Rasio Kepadatan</span>
+                            <span>${percent}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${percent}%; background-color: ${getColor(pop)}"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Handler saat hover (mouseover) wilayah peta
+        function highlightFeature(e) {
+            const layer = e.target;
+
+            layer.setStyle({
+                weight: 4,
+                color: '#4F46E5',
+                dashArray: '',
+                fillOpacity: 0.85
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+
+            updateDetailPanel(layer.feature.properties);
+            
+            // Highlight list item di sidebar
+            highlightListItem(layer.feature.properties.name);
+        }
+
+        // Handler saat mouse keluar (mouseout)
+        function resetHighlight(e) {
+            geojson.resetStyle(e.target);
+            updateDetailPanel(null);
+            clearListItemHighlight();
+        }
+
+        // Handler saat click wilayah peta
+        function zoomToFeature(e) {
+            map.fitBounds(e.target.getBounds());
+            updateDetailPanel(e.target.feature.properties);
+            highlightListItem(e.target.feature.properties.name, true);
+        }
+
+        // Setup event listener per wilayah
+        function onEachFeature(feature, layer) {
+            // Simpan layer untuk diakses dari list sidebar
+            districtLayers[feature.properties.name] = layer;
+
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+
+        // Render peta GeoJSON
+        geojson = L.geoJson(kecamatanData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);
+
+        // Sidebar List highlight helpers
+        function highlightListItem(name, click = false) {
+            clearListItemHighlight();
+            const items = document.querySelectorAll('.district-item');
+            items.forEach(item => {
+                if (item.getAttribute('data-name') === name) {
+                    item.classList.add('district-item-active');
+                    if (click) {
+                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            });
+        }
+
+        function clearListItemHighlight() {
+            const items = document.querySelectorAll('.district-item');
+            items.forEach(item => {
+                item.classList.remove('district-item-active');
+            });
+        }
+
+        // Inisialisasi daftar kecamatan di sidebar kanan
+        function initDistrictList() {
+            const listContainer = document.getElementById('district-list-container');
+            listContainer.innerHTML = '';
+
+            // Urutkan kecamatan dari populasi tertinggi ke terendah
+            const sortedFeatures = [...kecamatanData.features].sort((a, b) => b.properties.JmlPendduk - a.properties.JmlPendduk);
+
+            sortedFeatures.forEach(f => {
+                const props = f.properties;
+                const item = document.createElement('div');
+                item.className = 'district-item';
+                item.setAttribute('data-name', props.name);
+                item.innerHTML = `
+                    <span class="district-name">${props.name}</span>
+                    <span class="district-pop" style="color: ${getColor(props.JmlPendduk)}">${formatNumber(props.JmlPendduk)} jiwa</span>
+                `;
+
+                // Aksi klik daftar kecamatan
+                item.addEventListener('click', () => {
+                    const layer = districtLayers[props.name];
+                    if (layer) {
+                        map.fitBounds(layer.getBounds());
+                        // Trigger highlight manual
+                        geojson.resetStyle(); // Reset all styles first
+                        layer.setStyle({
+                            weight: 4,
+                            color: '#4F46E5',
+                            dashArray: '',
+                            fillOpacity: 0.85
+                        });
+                        layer.bringToFront();
+                        updateDetailPanel(props);
+                        highlightListItem(props.name, false);
+                    }
+                });
+
+                // Aksi hover daftar kecamatan
+                item.addEventListener('mouseenter', () => {
+                    const layer = districtLayers[props.name];
+                    if (layer) {
+                        layer.setStyle({
+                            weight: 3,
+                            color: '#4F46E5',
+                            dashArray: '',
+                            fillOpacity: 0.8
+                        });
+                        updateDetailPanel(props);
+                    }
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    const layer = districtLayers[props.name];
+                    if (layer) {
+                        geojson.resetStyle(layer);
+                        updateDetailPanel(null);
+                    }
+                });
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Inisialisasi legend di sidebar kanan
+        function initLegend() {
+            const legendContainer = document.getElementById('legend-container');
+            const grades = [0, 50000, 100000, 150000];
+            
+            legendContainer.innerHTML = '';
+
+            for (let i = 0; i < grades.length; i++) {
+                const from = grades[i];
+                const to = grades[i + 1];
+                const color = getColor(from + 1);
+                
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                
+                let rangeText = '';
+                if (to) {
+                    rangeText = `${formatNumber(from)} - ${formatNumber(to)} jiwa`;
+                } else {
+                    rangeText = `> ${formatNumber(from)} jiwa`;
+                }
+
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${color}"></div>
+                    <span>${rangeText} (${getDensityCategory(from + 1)})</span>
+                `;
+                legendContainer.appendChild(legendItem);
+            }
+        }
+
+        // Run all
+        initStatistics();
+        initDistrictList();
+        initLegend();
+
+    </script>
+</body>
+</html>
