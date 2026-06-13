@@ -4,3 +4,28 @@ services:
     restart: unless-stopped
     ports:
       - "8083:80"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: cecilDatabase123
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: cecilDatabase123
+    volumes:
+      - db_data_cecil:/var/lib/mysql
+      - ./db_init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -uroot -pcecilDatabase123 --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  db_data_cecil:
