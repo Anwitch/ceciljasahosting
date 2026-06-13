@@ -28,10 +28,21 @@ function findNearestIbadah(PDO $db, float $lat, float $lng): ?int {
 
 // ── Re-assign SEMUA warga verified (dipanggil saat radius/ibadah berubah) ──
 function reassignAllWarga(PDO $db): void {
-    $wargas = $db->query("SELECT id, lat, lng FROM warga_miskin WHERE status = 'verified'")->fetchAll();
-    $stmt   = $db->prepare("UPDATE warga_miskin SET ibadah_id = ? WHERE id = ?");
+    $ibadahs = $db->query("SELECT id, lat, lng, radius FROM rumah_ibadah WHERE status = 'verified'")->fetchAll();
+    $wargas  = $db->query("SELECT id, lat, lng FROM warga_miskin WHERE status = 'verified'")->fetchAll();
+    $stmt    = $db->prepare("UPDATE warga_miskin SET ibadah_id = ? WHERE id = ?");
     foreach ($wargas as $w) {
-        $ibadahId = findNearestIbadah($db, (float)$w['lat'], (float)$w['lng']);
-        $stmt->execute([$ibadahId, $w['id']]);
+        $wLat = (float)$w['lat'];
+        $wLng = (float)$w['lng'];
+        $nearest = null;
+        $minDist = PHP_FLOAT_MAX;
+        foreach ($ibadahs as $ib) {
+            $d = haversine($wLat, $wLng, (float)$ib['lat'], (float)$ib['lng']);
+            if ($d <= $ib['radius'] && $d < $minDist) {
+                $nearest = (int)$ib['id'];
+                $minDist = $d;
+            }
+        }
+        $stmt->execute([$nearest, $w['id']]);
     }
 }

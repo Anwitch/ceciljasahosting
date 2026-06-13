@@ -1,7 +1,7 @@
 <?php
 // ── Konfigurasi Database ──────────────────────
 // Sesuaikan dengan pengaturan XAMPP Anda
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
 define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_NAME', getenv('DB_NAME') ?: 'webgis_poverty_mapping');

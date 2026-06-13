@@ -1643,48 +1643,60 @@ a {
   width: 52px;
   min-width: 52px;
 }
-.verify-table-wrap th:nth-child(4),
-.verify-table-wrap td:nth-child(4) {
-  min-width: 110px; /* Kecamatan (both tables) */
-}
-.verify-table-wrap th:nth-child(7),
-.verify-table-wrap td:nth-child(7) {
-  min-width: 100px; /* Surveyor (both tables) */
-}
-.verify-table-wrap th:nth-child(8),
-.verify-table-wrap td:nth-child(8) {
-  min-width: 110px; /* Tanggal (both tables) */
-}
 .verify-table-wrap th:last-child,
 .verify-table-wrap td:last-child {
-  width: 180px;
-  min-width: 180px;
+  width: 140px;
+  min-width: 140px;
   text-align: right; /* Aksi (both tables) */
 }
 
 /* -- Ibadah table specific columns -- */
+.verify-ibadah-table th:nth-child(2),
+.verify-ibadah-table td:nth-child(2) {
+  min-width: 170px; /* Nama Tempat Ibadah */
+}
 .verify-ibadah-table th:nth-child(3),
 .verify-ibadah-table td:nth-child(3) {
-  min-width: 90px; /* Jenis */
+  min-width: 70px; /* Jenis */
+}
+.verify-ibadah-table th:nth-child(4),
+.verify-ibadah-table td:nth-child(4) {
+  min-width: 90px; /* Kecamatan */
 }
 .verify-ibadah-table th:nth-child(5),
 .verify-ibadah-table td:nth-child(5) {
-  min-width: 120px; /* PIC & WA */
+  min-width: 100px; /* PIC & WA */
 }
 .verify-ibadah-table th:nth-child(6),
 .verify-ibadah-table td:nth-child(6) {
-  width: 70px;
-  min-width: 70px; /* Radius (short, e.g. "500 m") */
+  width: 50px;
+  min-width: 50px; /* Radius */
+}
+.verify-ibadah-table th:nth-child(7),
+.verify-ibadah-table td:nth-child(7) {
+  min-width: 90px; /* Surveyor */
+}
+.verify-ibadah-table th:nth-child(8),
+.verify-ibadah-table td:nth-child(8) {
+  min-width: 90px; /* Tanggal */
 }
 
-/* -- Warga table specific columns -- */
+/* -- Warga table specific columns (no "Ibadah Terdekat" column) -- */
+.verify-warga-table th:nth-child(2),
+.verify-warga-table td:nth-child(2) {
+  min-width: 170px; /* Nama Kepala Keluarga (wider) */
+}
 .verify-warga-table th:nth-child(3),
 .verify-warga-table td:nth-child(3) {
-  min-width: 130px; /* NIK KK (16 digits) */
+  min-width: 130px; /* NIK KK */
+}
+.verify-warga-table th:nth-child(4),
+.verify-warga-table td:nth-child(4) {
+  min-width: 90px; /* Kecamatan */
 }
 .verify-warga-table th:nth-child(5),
 .verify-warga-table td:nth-child(5) {
-  min-width: 80px; /* Jml Anggota (short, e.g. "2 jiwa") */
+  min-width: 60px; /* Jml Anggota */
   text-align: center;
 }
 .verify-warga-table th:nth-child(5) {
@@ -1692,7 +1704,11 @@ a {
 }
 .verify-warga-table th:nth-child(6),
 .verify-warga-table td:nth-child(6) {
-  min-width: 140px; /* Ibadah Terdekat (longer text) */
+  min-width: 90px; /* Surveyor */
+}
+.verify-warga-table th:nth-child(7),
+.verify-warga-table td:nth-child(7) {
+  min-width: 90px; /* Tanggal */
 }
 
 .verify-table-wrap thead tr {
@@ -1971,6 +1987,7 @@ a {
   font-weight: 700;
   color: var(--text);
   font-family: monospace;
+  white-space: nowrap;
 }
 
 .vt-col-kec {

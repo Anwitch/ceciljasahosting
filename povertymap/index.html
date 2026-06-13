@@ -1685,7 +1685,7 @@
                 <tr>
                   <td>
                     ${ib.foto_path
-            ? `<img class="vt-thumb" src="${ib.foto_path}" onclick="window.open('${ib.foto_path}','_blank')" title="Lihat foto">`
+            ? `<img class="vt-thumb" src="${ib.foto_path}" loading="lazy" onclick="window.open('${ib.foto_path}','_blank')" title="Lihat foto">`
             : `<div class="vt-no-thumb"><i class="${ICONS[ib.jenis]}"></i></div>`}
                   </td>
                   <td>
@@ -1722,7 +1722,6 @@
                 <th>NIK KK</th>
                 <th>Kecamatan</th>
                 <th>Jml Anggota</th>
-                <th>Ibadah Terdekat</th>
                 <th>Surveyor</th>
                 <th>Tanggal</th>
                 <th style="text-align:right">Aksi</th>
@@ -1732,7 +1731,7 @@
                 <tr>
                   <td>
                     ${w.foto_path
-            ? `<img class="vt-thumb" src="${w.foto_path}" onclick="window.open('${w.foto_path}','_blank')" title="Lihat foto">`
+            ? `<img class="vt-thumb" src="${w.foto_path}" loading="lazy" onclick="window.open('${w.foto_path}','_blank')" title="Lihat foto">`
             : `<div class="vt-no-thumb"><i class="fa-solid fa-user"></i></div>`}
                   </td>
                   <td>
@@ -1747,11 +1746,6 @@
                   <td style="text-align:center">
                     <div class="vt-col-jiwa">${w.jumlah_anggota}</div>
                     <div class="vt-col-jiwa-sub">jiwa</div>
-                  </td>
-                  <td>
-                    ${w.ibadah_id
-            ? `<span class="vt-tag"><i class="fa-solid fa-circle-check"></i> ${h(w.ibadah_nama || 'Terlayani')}</span>`
-            : `<span class="vt-tag red"><i class="fa-solid fa-triangle-exclamation"></i> Belum terlayani</span>`}
                   </td>
                   <td><div class="vt-sub" style="font-size:12px;color:var(--text)">${h(w.surveyor_nama || '   ')}</div></td>
                   <td><div class="vt-sub" style="white-space:nowrap">${formatDate(w.created_at)}</div></td>
@@ -2428,25 +2422,34 @@
       m.layerGroups = { ibadah: layerIbadah, warga: layerWarga, heat: layerHeat };
       m._statusFilter = defaultStatusFilter();
 
+      const overlays = { "Rumah Ibadah": layerIbadah, "Warga Miskin": layerWarga };
+      const isSurveyor = (currentUser?.role === 'surveyor');
+      if (!isSurveyor) {
+        overlays["Heatmap Kemiskinan"] = layerHeat;
+      }
+
       L.control.layers(
         { "Street Map": osm, "Light Map": light, "Dark Map": dark },
-        { "Rumah Ibadah": layerIbadah, "Warga Miskin": layerWarga, "Heatmap Kemiskinan": layerHeat },
+        overlays,
         { collapsed: true }
       ).addTo(m);
       addStatusFilterControl(m);
-      addHeatmapSettingsControl(m);
 
-      // Integrasi event listener heatmap
-      m.on('overlayadd', e => {
-        if (e.name === "Heatmap Kemiskinan") {
-          showHeatmapControls(m, true);
-        }
-      });
-      m.on('overlayremove', e => {
-        if (e.name === "Heatmap Kemiskinan") {
-          showHeatmapControls(m, false);
-        }
-      });
+      if (!isSurveyor) {
+        addHeatmapSettingsControl(m);
+
+        // Integrasi event listener heatmap
+        m.on('overlayadd', e => {
+          if (e.name === "Heatmap Kemiskinan") {
+            showHeatmapControls(m, true);
+          }
+        });
+        m.on('overlayremove', e => {
+          if (e.name === "Heatmap Kemiskinan") {
+            showHeatmapControls(m, false);
+          }
+        });
+      }
 
       persistentMap = m;
       map = m; // agar flyToOnMap() dan referensi lama tetap bekerja
