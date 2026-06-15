@@ -1721,7 +1721,7 @@
                   </td>
                   <td><div class="vt-sub" style="white-space:nowrap">${ib.radius} m</div></td>
                   <td><div class="vt-sub" style="font-size:12px;color:var(--text)">${h(ib.surveyor_nama || '   ')}</div></td>
-                  <td><div class="vt-sub" style="white-space:nowrap">${formatDate(ib.created_at)}</div></td>
+                  <td><div class="vt-sub" style="white-space:nowrap">${formatDateLines(ib.created_at)}</div></td>
                   <td>
                     <div class="vt-actions" style="justify-content:flex-end">
                       <button class="btn-detail" onclick="openDetailModal('ibadah',${ib.id})"><i class="fa-solid fa-eye"></i> Detail</button>
@@ -1769,7 +1769,7 @@
                     <div class="vt-col-jiwa-sub">jiwa</div>
                   </td>
                   <td><div class="vt-sub" style="font-size:12px;color:var(--text)">${h(w.surveyor_nama || '   ')}</div></td>
-                  <td><div class="vt-sub" style="white-space:nowrap">${formatDate(w.created_at)}</div></td>
+                  <td><div class="vt-sub" style="white-space:nowrap">${formatDateLines(w.created_at)}</div></td>
                   <td>
                     <div class="vt-actions" style="justify-content:flex-end">
                       <button class="btn-detail" onclick="openDetailModal('warga',${w.id})"><i class="fa-solid fa-eye"></i> Detail</button>
@@ -3937,6 +3937,13 @@
     }
     function h(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
     function formatDate(d) { if (!d) return ''; const dt = new Date(d); return dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
+    function formatDateLines(d) {
+      if (!d) return '';
+      const dt = new Date(d);
+      const dateStr = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+      return `<div style="font-weight:600;color:var(--text)">${dateStr}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;"><i class="fa-regular fa-clock" style="margin-right:3px"></i>${timeStr}</div>`;
+    }
     function showLoading(v) { const el = document.getElementById('loading'); el.classList.toggle('show', v); }
     // --  Geocode Cache          
     const _geocodeCache = {};
