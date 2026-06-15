@@ -1396,8 +1396,15 @@
 
       if (isIb) {
         const clr = COLORS[d.jenis] || '#6b7280';
+        const iconHtml = d.foto_path ? `
+          <div class="dc-icon" style="overflow:hidden; border:1px solid var(--border); background:none;" onclick="event.stopPropagation(); openLightbox('${d.foto_path}')" title="Klik untuk memperbesar">
+            <img src="${d.foto_path}" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+        ` : `
+          <div class="dc-icon" style="background:${clr}18;color:${clr}"><i class="${ICONS[d.jenis] || 'fa-solid fa-place-of-worship'}"></i></div>
+        `;
         return `<div class="daftar-card ${isActive ? 'active' : ''}" onclick="daftarCardClick('ibadah',${id},${d.lat},${d.lng})" id="dc-ibadah-${id}">
-      <div class="dc-icon" style="background:${clr}18;color:${clr}"><i class="${ICONS[d.jenis] || 'fa-solid fa-place-of-worship'}"></i></div>
+      ${iconHtml}
       <div class="dc-body">
         <div class="dc-name">${h(d.nama)}</div>
         <div class="dc-sub">
@@ -1416,8 +1423,15 @@
     </div>`;
       } else {
         const covered = !!d.ibadah_id;
+        const iconHtml = d.foto_path ? `
+          <div class="dc-icon" style="overflow:hidden; border:1px solid var(--border); background:none;" onclick="event.stopPropagation(); openLightbox('${d.foto_path}')" title="Klik untuk memperbesar">
+            <img src="${d.foto_path}" style="width:100%; height:100%; object-fit:cover;">
+          </div>
+        ` : `
+          <div class="dc-icon" style="background:${covered ? 'var(--green-light)' : 'var(--border2)'};color:${covered ? 'var(--green)' : 'var(--text3)'}"><i class="fa-solid fa-user"></i></div>
+        `;
         return `<div class="daftar-card ${isActive ? 'active' : ''}" onclick="daftarCardClick('warga',${id},${d.lat},${d.lng})" id="dc-warga-${id}">
-      <div class="dc-icon" style="background:${covered ? 'var(--green-light)' : 'var(--border2)'};color:${covered ? 'var(--green)' : 'var(--text3)'}"><i class="fa-solid fa-user"></i></div>
+      ${iconHtml}
       <div class="dc-body">
         <div class="dc-name">${h(d.nama_kk)}</div>
         <div class="dc-sub">
@@ -2898,6 +2912,11 @@
         <i class="${ICONS[data.jenis] || 'fa-solid fa-place-of-worship'}" style="color:${COLORS[data.jenis] || '#f59e0b'}"></i>
         <span>${h(data.nama)}</span>
       </div>
+      ${data.foto_path ? `
+      <div style="width:100%; height:90px; margin-bottom:8px; border-radius:6px; overflow:hidden; border:1px solid var(--border)">
+        <img src="${data.foto_path}" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      ` : ''}
       <div class="tooltip-row">
         <span>PIC</span>
         <strong>${h(data.pic || '-')}</strong>
@@ -2926,6 +2945,11 @@
         <i class="fa-solid fa-user" style="color:#ef4444"></i>
         <span>${h(data.nama_kk)}</span>
       </div>
+      ${data.foto_path ? `
+      <div style="width:100%; height:90px; margin-bottom:8px; border-radius:6px; overflow:hidden; border:1px solid var(--border)">
+        <img src="${data.foto_path}" style="width:100%; height:100%; object-fit:cover;">
+      </div>
+      ` : ''}
       <div class="tooltip-row">
         <span>Anggota</span>
         <strong>${data.jumlah_anggota} jiwa</strong>
@@ -3607,7 +3631,16 @@
           </div>`,
           iconSize: [36, 36], iconAnchor: [18, 32]
         });
-        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`<strong>${data.nama}</strong><br>${data.radius}m radius`).openPopup();
+        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text)">
+            <strong>${h(data.nama)}</strong><br>
+            <span style="font-size:11px;color:var(--text2);">${data.radius}m radius</span>
+            ${data.foto_path ? `
+            <div style="margin-top:6px;width:120px;height:70px;border-radius:4px;overflow:hidden;border:1px solid var(--border)">
+              <img src="${data.foto_path}" style="width:100%;height:100%;object-fit:cover;">
+            </div>` : ''}
+          </div>
+        `).openPopup();
       } else {
         const sc = STATUS_COLORS.warga;
         const covered = !!data.ibadah_id;
@@ -3621,7 +3654,16 @@
           html: `<div style="width:18px;height:18px;background:${clrDot};border-radius:50%;border:${borderStyle};box-shadow:0 2px 8px rgba(0,0,0,.4);opacity:${opacity}"></div>`,
           iconSize: [18, 18], iconAnchor: [9, 9]
         });
-        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`<strong>${data.nama_kk}</strong><br>${data.jumlah_anggota} jiwa`).openPopup();
+        L.marker([data.lat, data.lng], { icon: ic }).addTo(m).bindPopup(`
+          <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text)">
+            <strong>${h(data.nama_kk)}</strong><br>
+            <span style="font-size:11px;color:var(--text2);">${data.jumlah_anggota} jiwa</span>
+            ${data.foto_path ? `
+            <div style="margin-top:6px;width:120px;height:70px;border-radius:4px;overflow:hidden;border:1px solid var(--border)">
+              <img src="${data.foto_path}" style="width:100%;height:100%;object-fit:cover;">
+            </div>` : ''}
+          </div>
+        `).openPopup();
 
         if (data.ibadah_id) {
           const ib = cachedIbadah.find(x => x.id == data.ibadah_id);
