@@ -1642,12 +1642,14 @@ a {
 .verify-table-wrap td:nth-child(1) {
   width: 52px;
   min-width: 52px;
+  padding-left: 20px;
 }
 .verify-table-wrap th:last-child,
 .verify-table-wrap td:last-child {
   width: 130px;
   min-width: 130px;
   text-align: right; /* Aksi (both tables) */
+  padding-right: 20px;
 }
 
 /* -- Ibadah table specific columns -- */
