@@ -11,5 +11,5 @@
 # Disable directory listing
 Options -Indexes
 
-# Disable PHP execution
-php_flag engine off
+# Disable PHP execution (Komentari jika menyebabkan error 500 di hosting PHP-FPM)
+# php_flag engine off
