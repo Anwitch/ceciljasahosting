@@ -56,7 +56,7 @@ $lat = null;
 $lng = null;
 $hasGps = false;
 
-if ($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') {
+if (($mimeType === 'image/jpeg' || $mimeType === 'image/jpg') && function_exists('exif_read_data')) {
     $exif = @exif_read_data($destPath, 'GPS', true);
     if ($exif && isset($exif['GPS']['GPSLatitude']) && isset($exif['GPS']['GPSLongitude'])) {
         $lat = exifGpsToDecimal(
