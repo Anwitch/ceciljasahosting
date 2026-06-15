@@ -1640,63 +1640,63 @@ a {
 /* Column sizes for verification tables to prevent squeezing and cutting off */
 .verify-table-wrap th:nth-child(1),
 .verify-table-wrap td:nth-child(1) {
-  width: 52px;
-  min-width: 52px;
+  width: 44px;
+  min-width: 44px;
 }
 .verify-table-wrap th:last-child,
 .verify-table-wrap td:last-child {
-  width: 140px;
-  min-width: 140px;
+  width: 115px;
+  min-width: 115px;
   text-align: right; /* Aksi (both tables) */
 }
 
 /* -- Ibadah table specific columns -- */
 .verify-ibadah-table th:nth-child(2),
 .verify-ibadah-table td:nth-child(2) {
-  min-width: 170px; /* Nama Tempat Ibadah */
+  min-width: 140px; /* Nama Tempat Ibadah */
 }
 .verify-ibadah-table th:nth-child(3),
 .verify-ibadah-table td:nth-child(3) {
-  min-width: 70px; /* Jenis */
+  min-width: 55px; /* Jenis */
 }
 .verify-ibadah-table th:nth-child(4),
 .verify-ibadah-table td:nth-child(4) {
-  min-width: 90px; /* Kecamatan */
+  min-width: 75px; /* Kecamatan */
 }
 .verify-ibadah-table th:nth-child(5),
 .verify-ibadah-table td:nth-child(5) {
-  min-width: 100px; /* PIC & WA */
+  min-width: 85px; /* PIC & WA */
 }
 .verify-ibadah-table th:nth-child(6),
 .verify-ibadah-table td:nth-child(6) {
-  width: 50px;
-  min-width: 50px; /* Radius */
+  width: 45px;
+  min-width: 45px; /* Radius */
 }
 .verify-ibadah-table th:nth-child(7),
 .verify-ibadah-table td:nth-child(7) {
-  min-width: 90px; /* Surveyor */
+  min-width: 75px; /* Surveyor */
 }
 .verify-ibadah-table th:nth-child(8),
 .verify-ibadah-table td:nth-child(8) {
-  min-width: 90px; /* Tanggal */
+  min-width: 75px; /* Tanggal */
 }
 
 /* -- Warga table specific columns (no "Ibadah Terdekat" column) -- */
 .verify-warga-table th:nth-child(2),
 .verify-warga-table td:nth-child(2) {
-  min-width: 170px; /* Nama Kepala Keluarga (wider) */
+  min-width: 140px; /* Nama Kepala Keluarga (wider) */
 }
 .verify-warga-table th:nth-child(3),
 .verify-warga-table td:nth-child(3) {
-  min-width: 130px; /* NIK KK */
+  min-width: 110px; /* NIK KK */
 }
 .verify-warga-table th:nth-child(4),
 .verify-warga-table td:nth-child(4) {
-  min-width: 90px; /* Kecamatan */
+  min-width: 75px; /* Kecamatan */
 }
 .verify-warga-table th:nth-child(5),
 .verify-warga-table td:nth-child(5) {
-  min-width: 60px; /* Jml Anggota */
+  min-width: 50px; /* Jml Anggota */
   text-align: center;
 }
 .verify-warga-table th:nth-child(5) {
@@ -1704,11 +1704,11 @@ a {
 }
 .verify-warga-table th:nth-child(6),
 .verify-warga-table td:nth-child(6) {
-  min-width: 90px; /* Surveyor */
+  min-width: 75px; /* Surveyor */
 }
 .verify-warga-table th:nth-child(7),
 .verify-warga-table td:nth-child(7) {
-  min-width: 90px; /* Tanggal */
+  min-width: 75px; /* Tanggal */
 }
 
 .verify-table-wrap thead tr {
@@ -1717,7 +1717,7 @@ a {
 }
 
 .verify-table-wrap thead th {
-  padding: 10px 14px;
+  padding: 9px 8px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1741,7 +1741,7 @@ a {
 }
 
 .verify-table-wrap td {
-  padding: 11px 14px;
+  padding: 9px 8px;
   font-size: 13px;
   color: var(--text);
   vertical-align: middle;
@@ -1794,12 +1794,12 @@ a {
 
 .vt-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
 }
 
 .vt-actions button {
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 6px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 11px;

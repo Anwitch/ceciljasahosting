@@ -1714,7 +1714,7 @@
                     ${ib.alamat ? `<div class="vt-sub">${h(ib.alamat.substring(0, 45))}${ib.alamat.length > 45 ? '...' : ''}</div>` : ''}
                   </td>
                   <td><span class="vt-tag amber"><i class="${ICONS[ib.jenis]}"></i> ${h(ib.jenis)}</span></td>
-                  <td><div class="vt-sub">${ib.kecamatan ? 'Kec. ' + h(ib.kecamatan) : '   '}</div></td>
+                  <td><div class="vt-sub">${ib.kecamatan ? h(ib.kecamatan) : '   '}</div></td>
                   <td>
                     <div class="vt-sub" style="font-weight:700;color:var(--text)">${h(ib.pic || '   ')}</div>
                     ${ib.no_wa ? `<div class="vt-sub" style="font-size:11px;color:var(--text2)"><i class="fa-brands fa-whatsapp" style="color:var(--green)"></i> ${h(ib.no_wa)}</div>` : ''}
@@ -1763,7 +1763,7 @@
                   <td>
                     <div class="vt-col-nik">${h(w.nik || '   ')}</div>
                   </td>
-                  <td><div class="vt-sub">${w.kecamatan ? 'Kec. ' + h(w.kecamatan) : '   '}</div></td>
+                  <td><div class="vt-sub">${w.kecamatan ? h(w.kecamatan) : '   '}</div></td>
                   <td style="text-align:center">
                     <div class="vt-col-jiwa">${w.jumlah_anggota}</div>
                     <div class="vt-col-jiwa-sub">jiwa</div>
